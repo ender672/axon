@@ -18,4 +18,4 @@ unless have_library('png', nil)
   abort "libpng is missing. Please install libpng."
 end
 
-create_makefile('jpeg/axon')
+create_makefile('axon/axon')

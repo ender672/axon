@@ -11,7 +11,7 @@ require 'axon/jpeg_writer'
 require 'axon/png_writer'
 
 module Axon
-  VERSION = '0.0.1'
+  VERSION = '0.0.2'
 
   def self.JPEG(thing, markers=nil)
     if thing.respond_to? :read

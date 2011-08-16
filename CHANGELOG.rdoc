@@ -1,3 +1,7 @@
 === 0.0.1 / 2011-08-01
 
 * Initial Release
+
+=== 0.0.2 / 2011-08-16
+
+* Fix a makefile bug that prevented axon from loading in 1.8.7

@@ -1,0 +1,104 @@
+= Axon
+
+http://github.com/ender672/axon
+
+== DESCRIPTION:
+
+Axon is a library for streaming and manipulating JPEG and PNG images. It scales
+and crops images along the way.
+
+By limiting its functionality, Axon is able to depend on two ubiquitous
+libraries: libjpeg and libpng. Axon can be installed anywhere those libraries
+are available.
+
+Axon never stores an entire image in memory. All images and operations are
+streamed from an input to an output. As a result, memory requirements and
+latency are low.
+
+== FEATURES:
+
+* Read and Write JPEG and PNG images.
+* Scale images using bilinear (fast!) or nearest-neighbor (even faster!)
+  interpolation.
+* Crop images.
+
+== SYNOPSIS:
+
+  # Short, chained example. Reads a JPEG from io_in and writes scaled png to
+  # io_out.
+  Axon.JPEG(io_in).fit(100, 100).write_png(io_out)
+
+  # Longer example, reads the JPEG header, looks at properties and header
+  # values, sets decompression options, scales the image, sets compression
+  # options, and writes a JPEG.
+  image = Axon.JPEG(io, [:APP2])
+
+  puts image.width
+  puts image.height
+  puts image[:APP2]
+  image.scale_denom = 4
+
+  jpeg = image.fit(100, 100).to_jpeg
+  jpeg.quality = 88
+  jpeg.write(io)
+
+== BASIC API:
+
+There are three basic object types: Image, Reader and Writer.
+
+Every Image object has the following methods:
+
+  * Image#height, Image#width
+    These are the output dimensions of the image.
+  * Image#color_model
+    Can be :GRAYSCALE or :RGB
+  * Image#components
+    An RGB image will have 3 components. A grayscale image with an alpha channel
+    (transparency) will have 2 components: grayscale and transparency, etc.
+  * Image#each(&block)
+    Yields every line in the image as a binary ruby string. Image properties
+    are not allowed to change between the first and last yield.
+
+A Reader object has the same methods as an Image object, with added methods that
+are specific to the decoding of the image format.
+
+A Writer has two methods:
+
+  * Writer#write(io[, options])
+  * Writer#data([options]) # returns image data as a string
+
+== REQUIREMENTS:
+
+IJG JPEG Library Version 6b or later.
+pnglib version 1.2.x or later.
+
+== INSTALL:
+
+gem install axon
+
+== LICENSE:
+
+(The MIT License)
+
+Copyright (c) 2011
+
+* {Timothy Elliott}[http://holymonkey.com]
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

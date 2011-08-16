@@ -1,0 +1,12 @@
+= TODO
+  * have a setting where decode / encode warnings will result in exceptions
+
+  * Test scalers with images that lie about width & height. Never trust
+    Image#width or Image#height -- instead always go by scanline size and how
+    many times #each_scanline calls yield
+
+  * add #initialize_copy
+
+  * Check frozen status on setters, etc.
+  * Check frozen status (and freeze) on all VALUEs that we stash for later use
+  * Check trusted status (1.9.x only)

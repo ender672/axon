@@ -132,7 +132,7 @@ pngwrite(VALUE self, VALUE io)
 
     info_ptr = png_create_info_struct(png_ptr);
     if (info_ptr == NULL) {
-	png_destroy_write_struct(&png_ptr, png_infopp_NULL);
+	png_destroy_write_struct(&png_ptr, (png_info **)NULL);
 	rb_raise(rb_eRuntimeError, "unable to allocate a png info object");
     }
 

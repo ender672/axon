@@ -8,6 +8,12 @@
 #define rb_block_call(arg1, arg2, arg3, arg4, arg5, arg6) rb_iterate(rb_each, arg1, arg5, arg6)
 #endif
 
+#ifdef JCS_EXTENSIONS
+#define JPEG_LIB_TURBO 1
+#else
+#define JPEG_LIB_TURBO 0
+#endif
+
 /*
  * Marker size is defined by two bytes, so the maximum is 65,535 bytes.
  * Two of those bytes are used by the size indicator bytes themselves, leaving

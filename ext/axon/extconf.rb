@@ -1,30 +1,35 @@
 require 'mkmf'
 
-$CFLAGS << " -g -O0" if ENV['GCC_DEBUG']
-png_header_path = []
-png_lib_path = []
-
-if RUBY_PLATFORM =~ /darwin/
-  $CFLAGS << " -I/usr/X11/include"
-  $LDFLAGS << " -L/usr/X11/lib"
-  png_lib_path << '/usr/X11/lib'
-  png_header_path << '/usr/X11/include'
+if enable_config('debug')
+  $CFLAGS << " -g -O0"
 end
 
-unless find_header('jpeglib.h')
-  abort "libjpeg headers are missing. Please install libjpeg headers."
+# OSX by default keeps libpng in the X11 dirs
+if RUBY_PLATFORM =~ /darwin/
+  png_idefault = '/usr/X11/include'
+  png_ldefault = '/usr/X11/lib'
+else
+  png_idefault = nil
+  png_ldefault = nil
+end
+
+dir_config('jpeg')
+dir_config('png', png_idefault, png_ldefault)
+
+unless have_header('jpeglib.h')
+  abort "libjpeg headers were not found."
 end
 
 unless have_library('jpeg')
-  abort "libjpeg is missing. Please install libjpeg."
+  abort "libjpeg was not found."
 end
 
-unless find_header('png.h', png_header_path.join(File::PATH_SEPARATOR))
-  abort "libpng headers are missing. Please install libpng headers."
+unless have_header('png.h')
+  abort "libpng headers were not found."
 end
 
-unless find_library('png', nil, png_lib_path.join(File::PATH_SEPARATOR))
-  abort "libpng is missing. Please install libpng."
+unless have_library('png')
+  abort "libpng was not found."
 end
 
 create_makefile('axon/axon')

@@ -1,21 +1,35 @@
 require 'mkmf'
 
-$CFLAGS += " -g -O0" if ENV['GCC_DEBUG']
-
-unless find_header('jpeglib.h')
-  abort "libjpeg headers are missing. Please install libjpeg headers."
+if enable_config('debug')
+  $CFLAGS << " -g -O0"
 end
 
-unless have_library('jpeg', nil)
-  abort "libjpeg is missing. Please install libjpeg."
+# OSX by default keeps libpng in the X11 dirs
+if RUBY_PLATFORM =~ /darwin/
+  png_idefault = '/usr/X11/include'
+  png_ldefault = '/usr/X11/lib'
+else
+  png_idefault = nil
+  png_ldefault = nil
 end
 
-unless find_header('png.h')
-  abort "libpng headers are missing. Please install libpng headers."
+dir_config('jpeg')
+dir_config('png', png_idefault, png_ldefault)
+
+unless have_header('jpeglib.h')
+  abort "libjpeg headers were not found."
 end
 
-unless have_library('png', nil)
-  abort "libpng is missing. Please install libpng."
+unless have_library('jpeg')
+  abort "libjpeg was not found."
+end
+
+unless have_header('png.h')
+  abort "libpng headers were not found."
+end
+
+unless have_library('png')
+  abort "libpng was not found."
 end
 
 create_makefile('axon/axon')

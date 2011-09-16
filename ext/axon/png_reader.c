@@ -30,9 +30,9 @@ free_png(struct png_data *reader)
     info_ptr = reader->info_ptr;
 
     if (png_ptr && info_ptr)
-	png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+	png_destroy_read_struct(&png_ptr, &info_ptr, (png_info **)NULL);
     else if (png_ptr)
-	png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
+	png_destroy_read_struct(&png_ptr, (png_info **)NULL, (png_info **)NULL);
 }
 
 static void
@@ -64,7 +64,7 @@ read_data_fn(png_structp png_ptr, png_bytep data, png_size_t length)
 	rb_raise(rb_eRuntimeError, "Read Error. Read %d instead of %d bytes.",
 		 (int)read_len, (int)length);
 
-    png_memcpy(data, RSTRING_PTR(str), read_len);
+    memcpy(data, RSTRING_PTR(str), read_len);
 }
 
 static void
@@ -91,7 +91,7 @@ allocate_png(struct png_data *reader)
 
     info_ptr = png_create_info_struct(png_ptr);
     if (info_ptr == NULL) {
-	png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
+	png_destroy_read_struct(&png_ptr, (png_info **)NULL, (png_info **)NULL);
 	rb_raise(rb_eRuntimeError, "unable to allocate a png info object");
     }
 
@@ -251,7 +251,7 @@ each2(VALUE arg)
 
     for (i = 0; i < height; i++) {
 	sl = rb_str_new(0, sl_width);
-	png_read_row(png_ptr, (png_bytep)RSTRING_PTR(sl), png_bytep_NULL);
+	png_read_row(png_ptr, (png_bytep)RSTRING_PTR(sl), (png_bytep)NULL);
 
 	if (rb_block_given_p())
 	    rb_yield(sl);

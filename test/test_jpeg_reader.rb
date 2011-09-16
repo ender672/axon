@@ -40,39 +40,41 @@ module Axon
       assert_equal 5, @reader.scale_num
     end
     
-    def test_scale_denom
-      assert @reader.scale_denom > 0
-    end
+    unless JPEG_LIB_TURBO
+      def test_scale_denom
+        assert @reader.scale_denom > 0
+      end
+
+      def test_set_scale_denom
+        @reader.scale_denom = 8
+
+        assert_equal 8, @reader.scale_denom
+      end
     
-    def test_set_scale_denom
-      @reader.scale_denom = 8
-      
-      assert_equal 8, @reader.scale_denom
-    end
-    
-    def test_scale_denom_affects_image_size
-      pre_width = @reader.width
-      pre_height = @reader.height
-      
-      @reader.scale_denom = 2
-      
-      assert @reader.width < pre_width
-      assert @reader.height < pre_height
-    end
+      def test_scale_denom_affects_image_size
+        pre_width = @reader.width
+        pre_height = @reader.height
 
-    def test_scale_denom_affects_written_image
-      pre_width = @reader.width
-      pre_height = @reader.height
+        @reader.scale_denom = 2
 
-      writer = JPEGWriter.new(@reader)
-      @reader.scale_denom = 2
+        assert @reader.width < pre_width
+        assert @reader.height < pre_height
+      end
 
-      new_velvet_io = StringIO.new(writer.data)
+      def test_scale_denom_affects_written_image
+        pre_width = @reader.width
+        pre_height = @reader.height
 
-      new_velvet_reader = JPEGReader.new(new_velvet_io)
+        writer = JPEGWriter.new(@reader)
+        @reader.scale_denom = 2
 
-      assert new_velvet_reader.width < pre_width
-      assert new_velvet_reader.height < pre_height
+        new_velvet_io = StringIO.new(writer.data)
+
+        new_velvet_reader = JPEGReader.new(new_velvet_io)
+
+        assert new_velvet_reader.width < pre_width
+        assert new_velvet_reader.height < pre_height
+      end
     end
     
     def test_dct_method

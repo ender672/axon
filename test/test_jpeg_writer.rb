@@ -1,4 +1,5 @@
 require 'helper'
+require 'writer_tests'
 
 module Axon
   class TestJPEGWriter < AxonTestCase

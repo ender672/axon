@@ -1,6 +1,7 @@
 require 'axon/axon'
 
 require 'axon/solid'
+require 'axon/noise'
 require 'axon/cropper'
 require 'axon/scaler'
 require 'axon/nearest_neighbor_scaler'

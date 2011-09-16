@@ -41,24 +41,24 @@ interpolate_scanline2(size_t width, double width_ratio, size_t components,
     dest_sl = RSTRING_PTR(rb_dest_sl);
     
     for (i = 0; i < width; i++) {
-        sample_x = i / width_ratio;
-        sample_x_i = (int)sample_x;
+	sample_x = i / width_ratio;
+	sample_x_i = (int)sample_x;
 
 	tx = sample_x - sample_x_i;
-        _tx = 1 - tx;
+	_tx = 1 - tx;
 
 	p11 =  tx * ty;
 	p01 = _tx * ty;
 	p10 =  tx - p11;
 	p00 = _tx - p01;
 
-        c00 = scanline1 + sample_x_i * components;
-        c10 = c00 + components;
-        c01 = scanline2 + sample_x_i * components;
-        c11 = c01 + components;
+	c00 = scanline1 + sample_x_i * components;
+	c10 = c00 + components;
+	c01 = scanline2 + sample_x_i * components;
+	c11 = c01 + components;
 
-        for (j = 0; j < components; j++)
-            *dest_sl++ = p00 * c00[j] + p10 * c10[j] + p01 * c01[j] +
+	for (j = 0; j < components; j++)
+	    *dest_sl++ = p00 * c00[j] + p10 * c10[j] + p01 * c01[j] +
 			 p11 * c11[j];
     }
     
@@ -66,11 +66,12 @@ interpolate_scanline2(size_t width, double width_ratio, size_t components,
 }
 
 /*
- *  call-seq:
- *     image.interpolate_scanline(original_scanlines, q) -> interpolated_scanline
- *     Expects the instance variable @image to respond to components, and
- *     expects the intance variable @width_ratio to respond to the ratio that
- *     we will resample our width to.
+ * call-seq:
+ *   image.interpolate_scanline(original_scanlines, q) -> string
+ *
+ * Expects the instance variable @image to respond to components, and
+ * expects the instance variable @width_ratio to respond to the ratio that
+ * we will resample our width to.
  */
 static VALUE
 interpolate_scanline(VALUE self, VALUE orig_scanline1, VALUE orig_scanline2,

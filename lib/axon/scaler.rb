@@ -12,6 +12,10 @@ module Axon
       else
         raise ArgumentError, "Must give one or two arguments"
       end
+
+      if @height_ratio <= 0 || @width_ratio <= 0
+        raise ArgumentError, "Can't scale to zero or below"
+      end
     end
 
     def components

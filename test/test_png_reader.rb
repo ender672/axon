@@ -1,4 +1,5 @@
 require 'helper'
+require 'reader_tests'
 
 module Axon
   class TestPNGReader < AxonTestCase

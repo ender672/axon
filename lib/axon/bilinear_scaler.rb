@@ -6,15 +6,15 @@ module Axon
 
     def each
       source_y = 0
-      destination_y = 0
+      dest_y = 0
       sample_y = 0
 
       each_scanline_with_next do |sl1, sl2|
         while sample_y.to_i == source_y
           yield interpolate_scanline(sl1, sl2, sample_y)
-
-          destination_y += 1
-          sample_y = destination_y / @height_ratio
+          dest_y += 1
+          break if dest_y >= @height
+          sample_y = dest_y / @height_ratio
         end
         
         source_y += 1

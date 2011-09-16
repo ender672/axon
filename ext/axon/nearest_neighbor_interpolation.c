@@ -4,14 +4,14 @@ static ID id_image, id_components, id_width_ratio, id_width;
 
 /*
 *  call-seq:
-*     image.interpolate_scanline(original_scanlines, q) -> interpolated_scanline
+*     image.interpolate_scanline(original_scanlines, q) -> string
 */
 static VALUE
 interpolate_scanline(VALUE self, VALUE rb_scanline)
 {
     VALUE rb_components, rb_width_ratio, rb_dest_sl, rb_image, rb_width;
     double width_ratio;
-    unsigned char *scanline, *dest_sl;
+    unsigned char *scanline, *dest_sl, *xpos;
     size_t width, components, i, j;
 
     rb_width = rb_ivar_get(self, id_width);
@@ -29,10 +29,12 @@ interpolate_scanline(VALUE self, VALUE rb_scanline)
     rb_dest_sl = rb_str_new(0, width * components);
     dest_sl = RSTRING_PTR(rb_dest_sl);
 
-    for (i = 0; i < width; i++)
-        for (j = 0; j < components; j++)
-            dest_sl[i * components + j] = scanline[(int)(i / width_ratio)];
-    
+    for (i = 0; i < width; i++) {
+	xpos = scanline + (int)( i / width_ratio ) * components;
+	for (j = 0; j < components; j++)
+            *dest_sl++ = *xpos++;
+    }
+
     return rb_dest_sl;
 }
 

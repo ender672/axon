@@ -88,10 +88,13 @@ Init_jpeg()
     VALUE mAxon = rb_define_module("Axon");
     rb_const_set(mAxon, rb_intern("JPEG_LIB_VERSION"),
 		 INT2FIX(JPEG_LIB_VERSION));
-    
-    rb_const_set(mAxon, rb_intern("JPEG_LIB_TURBO"),
-		 (JPEG_LIB_TURBO ? Qtrue : Qfalse));
 
+#ifdef JCS_EXTENSIONS
+    rb_const_set(mAxon, rb_intern("JPEG_LIB_TURBO"), Qtrue);
+#else
+    rb_const_set(mAxon, rb_intern("JPEG_LIB_TURBO"), Qfalse);
+#endif
+    
     init_jerror(&jerr);
 
     id_GRAYSCALE = rb_intern("GRAYSCALE");

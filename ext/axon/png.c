@@ -264,7 +264,7 @@ read_data_fn(png_structp png_ptr, png_bytep data, png_size_t length)
 	rb_raise(rb_eRuntimeError, "Read Error. Read %d instead of %d bytes.",
 		 (int)read_len, (int)length);
 
-    memcpy(data, RSTRING_PTR(str), read_len);
+    memcpy(data, RSTRING_PTR(str), length);
 }
 
 static void
@@ -420,7 +420,7 @@ p_gets(VALUE self)
     struct png_data *reader;
     png_structp png_ptr;
     png_infop info_ptr;
-    int width, components, sl_width;
+    png_uint_32 sl_width;
     size_t height;
     VALUE sl;
 
@@ -432,9 +432,7 @@ p_gets(VALUE self)
     if (reader->lineno >= height)
 	return Qnil;
 
-    width = png_get_image_width(png_ptr, info_ptr);
-    components = get_components(png_ptr, info_ptr);
-    sl_width = width * components;
+    sl_width = png_get_rowbytes(png_ptr, info_ptr);
 
     sl = rb_str_new(0, sl_width);
     png_read_row(png_ptr, (png_bytep)RSTRING_PTR(sl), (png_bytep)NULL);

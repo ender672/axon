@@ -5,6 +5,7 @@ require 'axon/cropper'
 require 'axon/fit'
 require 'axon/scalers'
 require 'axon/generators'
+require 'stringio'
 
 module Axon
   VERSION = '0.1.0'

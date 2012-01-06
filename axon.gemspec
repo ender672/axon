@@ -7,7 +7,9 @@ Gem::Specification.new do |s|
                      'lib/axon/*.rb',
                      'ext/axon/*{.c,.h}',
                      'ext/axon/extconf.rb',
-                     'test/*.rb'].to_a
+                     'test/*.rb',
+                     '.gemtest'
+  ].to_a
   s.name = 'axon'
   s.platform = Gem::Platform::RUBY
   s.require_path = 'lib'
@@ -21,7 +23,7 @@ axon never stores an entire image in memory. All images and operations are
 streamed. This keeps memory requirements and latency low.
 EOF
   s.summary = 'Axon reads, manipulates, and writes images.'
-  s.version = '0.1.0'
+  s.version = '0.1.1'
   s.authors = ['Timothy Elliott']
   s.extensions << 'ext/axon/extconf.rb'
   s.email = 'tle@holymonkey.com'

@@ -8,7 +8,7 @@ require 'axon/generators'
 require 'stringio'
 
 module Axon
-  VERSION = '0.1.0'
+  VERSION = '0.1.1'
 
   # :call-seq:
   #   Axon.jpeg(thing [, markers]) -> image

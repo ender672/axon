@@ -33,14 +33,17 @@ module Axon
     # cropped image will be truncated at the boundary.
     #
     def initialize(source, width, height, x_offset=nil, y_offset=nil)
+      x_offset ||= 0
+      y_offset ||= 0
+
       raise ArgumentError if width < 1 || height < 1
-      raise ArgumentError if x_offset && x_offset < 1 || y_offset && y_offset < 1
+      raise ArgumentError if x_offset < 0 || y_offset < 0
 
       @source = source
       @width = width
       @height = height
-      @x_offset = x_offset || 0
-      @y_offset = y_offset || 0
+      @x_offset = x_offset
+      @y_offset = y_offset
       @lineno = 0
     end
 

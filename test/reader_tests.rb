@@ -1,115 +1,70 @@
 module Axon
   module ReaderTests
-    def test_read_image_from_io
-      assert_equal 10, @reader.width
-      assert_equal 15, @reader.height
+    def test_header_dimensions
+      assert_equal @image.width, @reader.width
+      assert_equal @image.height, @reader.height
     end
     
-    def test_read_image_from_string
-      assert_equal 10, @reader.width
-      assert_equal 15, @reader.height
+    def test_header_components
+      assert_equal @image.components, @reader.components
     end
     
-    def test_num_components
-      assert_equal 3, @reader.components
+    def test_header_color_model
+      assert_equal @image.color_model, @reader.color_model
     end
     
-    def test_color_model
-      assert_equal :RGB, @reader.color_model
-    end
-    
-    class DoubleIO < StringIO
-      def read(*args)
-        s = super
-        s[0..20] * 100
-      end
-    end
-    
-    def test_io_returns_too_much
-      f = DoubleIO.new @data
-      assert_raises(RuntimeError) { @readerclass.new f }
-    end
-    
-    class NilIO
-      def read(*args); end
+    def test_io_returns_too_much_data
+      io = CustomIO.new(Proc.new{ |io, *args| io.read(*args)[0..20] * 100 }, @data)
+      assert_raises(RuntimeError) { @readerclass.new io }
     end
     
     def test_io_returns_nil
-      assert_raises(RuntimeError) { @readerclass.new NilIO.new }
-    end
-    
-    class RaiseIO
-      def read(*args)
-        raise 'heck'
-      end
-    end
-    
-    def test_io_raises_exception
-      assert_raises(RuntimeError) { @readerclass.new RaiseIO.new }
+      assert_raises(RuntimeError) { @readerclass.new(CustomIO.new(nil)) }
     end
 
-    class EmptyStringIO
-      def read(*args)
-        ""
-      end
+    def test_io_returns_one_byte_at_a_time
+      io = CustomIO.new(Proc.new{ |io, len| io.read(len || 1) }, @data)
+      r = @readerclass.new(io)
+      r.gets
+    end
+
+    def test_io_raises_exception
+      io = CustomIO.new(Proc.new{ raise CustomError }, @data)
+      assert_raises(CustomError) { @readerclass.new io }
     end
 
     def test_empty_string_io
-      assert_raises(RuntimeError) { @readerclass.new EmptyStringIO.new }
-    end
-    
-    class ThatsNotAStringIO
-      def read(*args)
-        :this_should_be_a_string
-      end
+      assert_raises(RuntimeError) { @readerclass.new(CustomIO.new("")) }
     end
     
     def test_not_a_string_io
-      assert_raises(TypeError) { @readerclass.new ThatsNotAStringIO.new }
+      assert_raises(TypeError) { @readerclass.new(CustomIO.new(:foo)) }
     end
-    
-    def test_each
-      size = @reader.width * @reader.components
 
-      @reader.each do |scan_line|
-        assert_equal size, scan_line.size
+    def test_lineno
+      assert_equal 0, @reader.lineno
+      @reader.height.times do |i|
+        assert_equal i, @reader.lineno
+        @reader.gets
       end
+      assert_equal nil, @reader.gets
+      assert_equal @reader.height, @reader.lineno
     end
     
-    def test_no_shenanigans_during_each
-      @reader.each do |sl|
-        assert_raises(RuntimeError) { @reader.each{} }
-        break
+    def test_gets
+      size = @reader.width * @reader.components
+      @reader.height.times do
+        assert_equal size, @reader.gets.size
       end
-    end
-    
-    class OneExceptionIO < StringIO
-      def initialize(*args)
-        @raised_exception = false
-        super
-      end
-      
-      def read(*args)
-        unless @raised_exception
-          @raised_exception = true
-          raise 'heck'
-        end
-        super
-      end
+      assert_equal nil, @reader.gets
     end
     
     def test_recovers_from_initial_io_exception
-      io = OneExceptionIO.new @data
+      ex_io = CustomIO.new(Proc.new{ raise CustomError }, @data)
       r = @readerclass.allocate
-      assert_raises(RuntimeError) { r.send(:initialize, io) }
-      r.send(:initialize, io)
-      r.each{ }
-    end
-
-    def test_multiple_each_calls
-      @reader.each{ }
-      @io_in.rewind
-      @reader.each{ }
+      assert_raises(CustomError) { r.send(:initialize, ex_io) }
+      r.send(:initialize, StringIO.new(@data))
+      r.gets
     end
   end
 end

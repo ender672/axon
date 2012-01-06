@@ -2,15 +2,18 @@ require 'helper'
 require 'reader_tests'
 
 module Axon
-  class TestPNGReader < AxonTestCase
-    include ReaderTests
+  module PNG
+    class TestPNGReader < AxonTestCase
+      include ReaderTests
 
-    def setup
-      super
-      @readerclass = PNGReader
-      @data = @image.to_png.data
-      @io_in = StringIO.new @data
-      @reader = PNGReader.new(@io_in)
+      def setup
+        super
+        io = StringIO.new
+        PNG.write(@image, io)
+        @data = io.string
+        @readerclass = Reader
+        @reader = Reader.new(StringIO.new(@data))
+      end
     end
   end
 end

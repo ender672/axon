@@ -7,15 +7,12 @@ module Axon
         [@image.width, @image.height],
         [1, 1]
       ].each do |dims|
+        im = Solid.new(100, 200)
+
         w, h = dims[0], dims[1]
 
-        y = 0
-        @scalerclass.new(@image, w, h).each do |sl|
-          assert_equal w * @image.components, sl.size
-          y += 1
-        end
-
-        assert_equal h, y
+        s = @scalerclass.new(im, w, h)
+        assert_image_dimensions(s, w, h)
       end
     end
 
@@ -24,41 +21,46 @@ module Axon
         w, h = dims[0], dims[1]
 
         assert_raises ArgumentError do
-          @scalerclass.new(@image, w, h).each{ |sl| }
+          @scalerclass.new(@image, w, h).gets
         end
       end
     end
 
     def test_scalar
       [1, 2, 3, 1.1, 2.1, 0.9, 0.1].each do |scale|
-        y = 0
-        expected_width = @image.components * (@image.width * scale).to_i
+        im = Solid.new(100, 200)
+        width = (im.width * scale).to_i
+        height = (im.height * scale).to_i
 
-        @scalerclass.new(@image, scale).each do |sl|
-          assert_equal expected_width, sl.size
-          y += 1
-        end
-        assert_equal((@image.height * scale).floor, y)
+        s = @scalerclass.new(im, width, height)
+        assert_image_dimensions(s, width, height)
       end
     end
 
     def test_bad_scalar
       [0, 0.0, -1, -0.1].each do |scale|
         assert_raises ArgumentError do
-          @scalerclass.new(@image, scale).each{ |sl| }
+          @scalerclass.new(@image, scale).gets
         end
       end
     end
 
     def scale_test(*coords)
-      noise = Noise.new 100, 200, :seed => 1
+      cache = Repeater.new(Noise.new 100, 200)
 
       [1.0, 5.0, 0.3, 2.8].each do |scale|
-        test_scaler = @scalertestclass.new(noise, scale)
-        resized = @scalerclass.new(noise, scale).to_a
+        width = (cache.width * scale).to_i
+        height = (cache.height * scale).to_i
 
-        right = (noise.width * scale).floor - 1
-        bottom = (noise.height * scale).floor - 1
+        cache.rewind
+        test_scaler = @scalertestclass.new(cache, width, height)
+        cache.rewind
+        s = @scalerclass.new(cache, width, height)
+        resized = []
+        s.height.times{ resized << s.gets }
+
+        right = width - 1
+        bottom = height - 1
 
         coords.each do |coord|
           x = coord[0]
@@ -67,9 +69,14 @@ module Axon
           x = right if x < 0
           y = bottom if y < 0
 
-          result = resized[y][x * 3, 3].chars.map{ |c| c.ord }
+          result = resized[y][x * 3, 3].chars.map do |c|
+            c.respond_to?(:ord) ? c.ord : c[0]
+          end
 
-          assert_equal test_scaler.calc(x, y), result
+          expected = test_scaler.calc(x, y)
+          3.times do |i|
+            assert_in_delta expected[i], result[i], 1
+          end
         end
       end
     end
@@ -84,6 +91,12 @@ module Axon
 
     def test_corner_pixel_values
       scale_test [0, 0], [-1, 0], [0, -1], [-1, -1]
+    end
+
+    def test_small_scaling
+      im = Solid.new(10, 20)
+      sc = @scalerclass.new(im, 2, 5)
+      assert_image_dimensions(sc, 2, 5)
     end
   end
 end

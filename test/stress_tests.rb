@@ -4,9 +4,12 @@ module Axon
   class TestStressCases < AxonTestCase
     def setup
       @velvet = "\x0A\x14\x69"
-      @image = Generator::Solid.new 1000, 1500, @velvet
-      @jpeg_data = @image.to_jpeg.data
-      @readerclass = JPEGReader
+      @image = Solid.new 1000, 1500, @velvet
+
+      io = StringIO.new
+      JPEG.write(@image, io)
+      @jpeg_data = io.string
+      @readerclass = JPEG::Reader
     end
 
     class RandomRaiseIO
@@ -15,7 +18,7 @@ module Axon
         @die_at = rand(source.size)
       end
 
-      def read
+      def read(*args)
         if @die_at < 2
           raise 'random death!'
         end
@@ -40,7 +43,7 @@ module Axon
         @sequence = sequence
       end
 
-      def read
+      def read(*args)
         if !@sequence || @sequence.empty?
           raise "random death!"
           @sequence = nil

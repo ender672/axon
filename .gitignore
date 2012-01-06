@@ -1,3 +1,7 @@
-lib/axon/axon.so
-tmp
+ext/axon/*.so
+ext/axon/*.log
+ext/axon/*.o
+ext/axon/Makefile
+*.gem
+*.rbc
 

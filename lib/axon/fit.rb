@@ -1,43 +1,99 @@
-module Axon
-  class Fit
-    include Image
-    include Enumerable
+require 'axon/scalers'
 
+module Axon
+
+  # == An Image Box Scaler
+  #
+  # Axon::Fit will scale images to fit inside given box dimensions while
+  # maintaining the aspect ratio.
+  #
+  # == Example
+  #
+  #   image_in = Axon::Solid.new(10, 20)
+  #   f = Axon::Fit.new(image_in, 5, 20)
+  #   f.width  # => 5
+  #   f.height # => 10
+  #
+  class Fit
+    # :call-seq:
+    #   Fit.new(image_in, width, height)
+    #
+    # Fits +image_in+ in the box dimensions given by +width+ and +height+. The
+    # resulting image will not extend beyond the given +width+ or the given
+    # +height+. The resulting image will maintain the aspect ratio of +image_in+
+    # so the resulting image may not completely fill +width+ and +height+.
+    #
+    # The resulting image will match either +width+ or +height+.
+    #
     def initialize(source, width, height)
       @source, @fit_width, @fit_height = source, width, height
+      @scaler = nil
     end
 
+    # Gets the components in the fitted image. Same as the components of the
+    # source image.
+    #
     def components
       @source.components
     end
 
+    # Gets the color model of the fitted image. Same as the color model of the
+    # source image.
+    #
     def color_model
       @source.color_model
     end
 
+    # Gets the width of the fitted image. This will be the given width or less.
+    #
     def width
-      @source.width * calc_fit_ratio
+      @scaler ? @scaler.width : calculate_width
     end
 
+    # Gets the height of the fitted image. This will be the given height or
+    # less.
+    #
     def height
-      @source.height * calc_fit_ratio
+      @scaler ? @scaler.height : calculate_height
     end
 
-    def each
+    # Gets the index of the next line that will be fetched by gets, starting at
+    # 0.
+    #
+    def lineno
+      @scaler ? @scaler.lineno : 0
+    end
+
+    # Gets the next scanline from the fitted image.
+    #
+    def gets
+      @scaler ||= get_scaler
+      @scaler.gets
+    end
+
+    private
+
+    def calculate_width
+      (@source.width * calc_fit_ratio).to_i
+    end
+
+    def calculate_height
+      (@source.height * calc_fit_ratio).to_i
+    end
+
+    def get_scaler
       r = calc_fit_ratio
 
       if r > 1
-        scaler = NearestNeighborScaler.new(@source, r)
-        scaler.each{ |*a| yield(*a) }
+        NearestNeighborScaler.new(@source, width, height)
       elsif r < 1
-        if r <= 0.5 && @source.kind_of?(JPEGReader)
+        if r <= 0.5 && @source.kind_of?(JPEG::Reader)
           @source.scale_denom = calc_jpeg_pre_shrink(r)
           r = calc_fit_ratio
         end
-        scaler = BilinearScaler.new(@source, r)
-        scaler.each{ |*a| yield(*a) }
+        BilinearScaler.new(@source, width, height)
       else
-        @source.each{ |*a| yield(*a) }
+        @source
       end
     end
 
@@ -56,12 +112,6 @@ module Axon
       when (4...8) then 4
       else 8
       end
-    end
-  end
-
-  module Image
-    def fit(*args)
-      Fit.new(self, *args)
     end
   end
 end

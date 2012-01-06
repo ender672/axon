@@ -2,13 +2,14 @@ require 'helper'
 require 'writer_tests'
 
 module Axon
-  class TestPNGWriter < AxonTestCase
-    include WriterTests
+  module PNG
+    class TestPNGWriter < AxonTestCase
+      include WriterTests
 
-    def setup
-      super
-      @writerclass = PNGWriter
-      @writer = @image.to_png
+      def setup
+        super
+        @mod = PNG
+      end
     end
   end
 end

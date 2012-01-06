@@ -1,178 +1,196 @@
 module Axon
   module WriterTests
     def test_writes_something
-      @writer.write(@io_out)
+      @mod.write(@image, @io_out)
       refute @io_out.string.empty?
     end
 
-    class ZeroHeightImage < Solid
-      def height; 0; end
+    def test_returns_bytes_written
+      ret = @mod.write(@image, @io_out)
+      assert_equal @io_out.size, ret
     end
 
-    class NegativeHeightImage < Solid
-      def height; -1; end
-    end
-
-    class NilHeightImage < Solid
-      def height; nil; end
-    end
-
-    def test_bad_dimension
-      i = ZeroHeightImage.new 10, 15, @velvet
-      writer = @writerclass.new(i)
-
-      assert_raises RuntimeError do
-        writer.write(@io_out)
+    def test_invalid_numeric_height
+      [0, -100, 0.0001].each do |h|
+        assert_raises RuntimeError do
+          @mod.write(CustomHeightImage.new(h), @io_out)
+        end
       end
-      
-      i = NegativeHeightImage.new 10, 15, @velvet
-      writer = @writerclass.new(i)
+    end
 
-      assert_raises RuntimeError do
-        writer.write(@io_out)
+    def test_invalid_height_type
+      [nil, :foo].each do |h|
+        assert_raises TypeError, "should throw a TypeError when given a #{h.class} for height." do
+          @mod.write(CustomHeightImage.new(h), @io_out)
+        end
       end
+    end
 
-      i = NilHeightImage.new 10, 15, @velvet
-      writer = @writerclass.new(i)
+    def test_height_raises_exception
+      im = CustomHeightImage.new(Proc.new{ raise CustomError })
+      assert_raises CustomError do
+        @mod.write(im, @io_out)
+      end
+    end
 
+    def test_invalid_numeric_width
+      [0, -100, 0.0001].each do |w|
+        assert_raises RuntimeError do
+          @mod.write(CustomWidthImage.new(w), @io_out)
+        end
+      end
+    end
+
+    def test_invalid_width_type
+      [nil, :foo].each do |w|
+        assert_raises TypeError, "should throw a TypeError when given a #{w.class} for width." do
+          @mod.write(CustomWidthImage.new(w), @io_out)
+        end
+      end
+    end
+
+    def test_width_raises_exception
+      im = CustomWidthImage.new(Proc.new{ raise CustomError })
+      assert_raises CustomError do
+        @mod.write(im, @io_out)
+      end
+    end
+
+    def test_nil_image_color_model
       assert_raises TypeError do
-        writer.write(@io_out)
+        @mod.write(CustomColorModelImage.new(nil), @io_out)
       end
     end
 
-    class NilColorModelImage < Solid
-      def color_model; nil; end
-    end
-
-    def test_bad_color_model
-      i = NilColorModelImage.new 10, 15, @velvet
-      writer = @writerclass.new(i)
-
+    def test_invalid_color_model
       assert_raises RuntimeError do
-        writer.write(@io_out)
+        @mod.write(CustomColorModelImage.new(:foo), @io_out)
       end
     end
 
-    class TooManyComponentsImage < Solid
-      def components; 15; end
-    end
-
-    class ZeroComponentsImage < Solid
-      def components; 0; end
-    end
-
-    class NilComponentsImage < Solid
-      def components; nil; end
-    end
-
-    def test_bad_components
-      i = NilComponentsImage.new 10, 15, @velvet
-      writer = @writerclass.new(i)
-
-      assert_raises TypeError do
-        writer.write(@io_out)
+    def test_color_model_raises_exception
+      im = CustomColorModelImage.new(Proc.new{ raise CustomError })
+      assert_raises CustomError do
+        @mod.write(im, @io_out)
       end
+    end
 
-      i = TooManyComponentsImage.new 10, 15, @velvet
-      writer = @writerclass.new(i)
-
-      assert_raises RuntimeError do
-        writer.write(@io_out)
+    def test_invalid_image_components
+      [0, -100, 0.0001, 15].each do |w|
+        assert_raises RuntimeError do
+          @mod.write(CustomComponentsImage.new(w), @io_out)
+        end
       end
+    end
 
-      i = ZeroComponentsImage.new 10, 15, @velvet
-      writer = @writerclass.new(i)
+    def test_invalid_components_type
+      [nil, :foo].each do |w|
+        assert_raises TypeError do
+          @mod.write(CustomComponentsImage.new(w), @io_out)
+        end
+      end
+    end
 
-      assert_raises RuntimeError do
-        writer.write(@io_out)
+    def test_invalid_components_type
+      [nil, :foo].each do |w|
+        assert_raises TypeError, "should throw a TypeError when given a #{w.class} for components." do
+          @mod.write(CustomComponentsImage.new(w), @io_out)
+        end
+      end
+    end
+
+    def test_components_raises_exception
+      im = CustomComponentsImage.new(Proc.new{ raise CustomError })
+      assert_raises CustomError do
+        @mod.write(im, @io_out)
+      end
+    end
+
+    def test_invalid_lineno_type
+      [-1, nil, :foo].each do |l|
+        # we don't know if the writer will care but test anyways to detect
+        # interpreter crashes and mem leaks.
+        @mod.write(CustomLinenoImage.new(l), @io_out)
+      end
+    end
+
+    def test_odd_gets_type
+      [nil, :foo, 1234].each do |l|
+        assert_raises RuntimeError do
+          @mod.write(CustomGetsImage.new(l), @io_out)
+        end
+      end
+    end
+
+    def test_gets_raises_exception_immediately
+      im = CustomGetsImage.new(Proc.new{ raise CustomError })
+      assert_raises CustomError do
+        @mod.write(im, @io_out)
       end
     end
     
-    class RaisingIO
-      def write(data)
-        raise 'hell'
+    def test_gets_raises_exception_later
+      proc = Proc.new{ |im| im.lineno > 3 ? raise(CustomError) : im.gets }
+      i = CustomGetsImage.new(proc)
+      assert_raises CustomError do
+        @mod.write(i, @io_out)
       end
+      assert_equal 4, i.lineno
     end
-    
-    def test_io_raises_exception
-      io = RaisingIO.new
-      
+
+    def test_gets_return_is_too_short_immediately
+      proc = Proc.new{ |im| im.gets[2, -1] }
       assert_raises RuntimeError do
-        @writer.write(io)
+        @mod.write(CustomGetsImage.new(proc), @io_out)
       end
     end
-    
-    class NilImage < Solid
-      def each
-        10.times{ yield nil }
-      end
-    end
-    
-    def test_image_scanlines_yield_nil
-      image = NilImage.new(10, 15, @velvet)
-      writer = @writerclass.new(image)
-      
+
+    def test_gets_return_is_too_short_later
+      proc = Proc.new{ |im| im.lineno > 3 ? im.gets[2, -1] : im.gets }
+      i = CustomGetsImage.new(proc)
       assert_raises RuntimeError do
-        writer.write(@io_out)
+        @mod.write(i, @io_out)
       end
-    end
-
-    class TooManyScanLinesImage < Solid
-      def each
-        super
-        yield(@color * width)
-      end
-    end
-
-    def test_image_yields_too_many_scanlines
-      image = TooManyScanLinesImage.new 10, 15, @velvet
-      writer = @writerclass.new(image)
-      writer.write(@io_out)
-    end
-
-    class TooFewScanLinesImage < Solid
-      def each
-        yield(@color * width)
-      end
+      assert_equal 5, i.lineno
     end
     
-    def test_image_yields_too_few_scanlines
-      image = TooFewScanLinesImage.new 10, 15, @velvet
-      writer = @writerclass.new(image)
-
+    def test_gets_return_is_too_long_immediately
+      proc = Proc.new{ |im| im.gets * 2 }
       assert_raises RuntimeError do
-        writer.write(@io_out)
+        @mod.write(CustomGetsImage.new(proc), @io_out)
       end
     end
 
-    class RaisingImage < Solid
-      def each
-        raise 'chickens'
-      end
-    end
-    
-    def test_image_scanlines_raises_exception
-      image = RaisingImage.new(10, 15, @velvet)
-      writer = @writerclass.new(image)
-
+    def test_gets_return_is_too_long_later
+      proc = Proc.new{ |im| im.lineno > 3 ? im.gets * 2 : im.gets }
+      i = CustomGetsImage.new(proc)
       assert_raises RuntimeError do
-        writer.write(@io_out)
+        @mod.write(i, @io_out)
       end
+      assert_equal 5, i.lineno
     end
-    
-    class BigWidthImage < Solid
-      def each
-        sl = @color * width * 10
-        height.times { yield sl }
-      end
-    end
-    
-    def test_image_scanlines_returns_too_much
-      image = BigWidthImage.new(10, 15, @velvet)
-      writer = @writerclass.new(image)
 
-      assert_raises RuntimeError do
-        writer.write(@io_out)
+    def test_io_raises_exception_immediately
+      io = CustomIO.new(Proc.new{ raise CustomError })
+      assert_raises CustomError do
+        @mod.write(@image, io)
+      end
+    end
+
+    def test_io_returns_invalid_type
+      [nil, :foo, "bar"].each do |r|
+        im = Solid.new(200, 100)
+        assert_raises TypeError, "should get a TypeError when IO#write returns a #{r.class}." do
+          @mod.write(im, CustomIO.new(r))
+        end
+      end
+    end
+
+    def test_io_returns_invalid_length
+      [0, -1, -100, 2000, 1].each do |r|
+        assert_raises RuntimeError do
+          @mod.write(@image, CustomIO.new(r))
+        end
       end
     end
   end

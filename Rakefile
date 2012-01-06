@@ -1,30 +1,35 @@
-require 'rubygems'
-require 'hoe'
+require 'rake/clean'
+require 'rake/testtask'
 
-HOE = Hoe.spec 'axon' do
-  developer('Timothy Elliott', 'tle@holymonkey.com')
-  self.readme_file   = 'README.rdoc'
-  self.history_file  = 'CHANGELOG.rdoc'
-  self.extra_dev_deps << ['rake-compiler', '>= 0']
-  self.spec_extras = { :extensions => ["ext/axon/extconf.rb"] }
+file 'ext/axon/Makefile' do
+  cd 'ext/axon' do
+    ruby "extconf.rb #{ENV['EXTOPTS']}"
+  end
 end
 
-require "rake/extensiontask"
-
-Rake::ExtensionTask.new('axon', HOE.spec) do |ext|
-  ext.lib_dir = File.join('lib', 'axon')
+file 'ext/axon/axon.so' => FileList.new('ext/axon/Makefile', 'ext/axon/*{.c,.h}') do
+  cd 'ext/axon' do
+    sh 'make'
+  end
 end
 
-Rake::Task[:test].prerequisites << :compile
+CLEAN.add('ext/axon/*{.o,.so,.log}', 'ext/axon/Makefile')
+CLOBBER.add('*.gem')
 
-desc 'Run a test in looped mode so that you can look for memory leaks.'
-task 'test_loop' do
-  code = %Q[require '#{$*[1]}'; loop{ MiniTest::Unit.new.run }]
-  cmd = %Q[ruby -Ilib -Itest -e "#{ code }"]
-  system cmd
+desc 'Clean up Rubinius .rbc files.'
+namespace :clean do
+  task :rbc do
+    system "find . -name *.rbc -delete"
+  end
 end
 
-desc 'Watch Memory use of a looping test'
-task 'test_loop_mem' do
-  system 'watch "ps aux | grep Itest"'
+Rake::TestTask.new do |t|
+  t.libs += ['test', 'ext']
+  t.test_files = FileList['test/test*.rb']
+  t.verbose = true
 end
+
+desc 'Compile axon'
+task :compile => 'ext/axon/axon.so'
+task :test => :compile
+task :default => :test

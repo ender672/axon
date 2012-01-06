@@ -1,9 +1,5 @@
 require 'mkmf'
 
-if enable_config('debug')
-  $CFLAGS << " -g -O0"
-end
-
 # OSX by default keeps libpng in the X11 dirs
 if RUBY_PLATFORM =~ /darwin/
   png_idefault = '/usr/X11/include'

@@ -147,7 +147,7 @@ write_png2(VALUE *args)
     write_configure(image_in, png_ptr, info_ptr);
     png_write_info(png_ptr, info_ptr);
 
-    for (i = 0; i < info_ptr->height; i++) {
+    for (i = 0; i < png_get_image_height(png_ptr, info_ptr); i++) {
 	scanline = rb_funcall(image_in, id_gets, 0);
 	write_scanline(scanline, png_ptr, info_ptr);
     }

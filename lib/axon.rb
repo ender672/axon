@@ -7,7 +7,7 @@ require 'axon/scalers'
 require 'axon/generators'
 
 module Axon
-  VERSION = '0.0.2'
+  VERSION = '0.1.0'
 
   # :call-seq:
   #   Axon.jpeg(thing [, markers]) -> image

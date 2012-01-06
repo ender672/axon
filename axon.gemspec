@@ -21,7 +21,7 @@ axon never stores an entire image in memory. All images and operations are
 streamed. This keeps memory requirements and latency low.
 EOF
   s.summary = 'Axon reads, manipulates, and writes images.'
-  s.version = '0.0.2'
+  s.version = '0.1.0'
   s.authors = ['Timothy Elliott']
   s.extensions << 'ext/axon/extconf.rb'
   s.email = 'tle@holymonkey.com'

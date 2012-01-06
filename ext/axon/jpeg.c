@@ -19,7 +19,7 @@
 #define EXIF_MARKER (JPEG_APP0 + 1)
 
 #define WRITE_BUFSIZE 1024
-#define READ_SIZE 2048
+#define READ_SIZE 1024
 
 static ID id_ISLOW, id_IFAST, id_FLOAT, id_DEFAULT, id_FASTEST;
 static ID id_GRAYSCALE, id_RGB, id_YCbCr, id_CMYK, id_YCCK, id_UNKNOWN;
@@ -45,7 +45,7 @@ struct readerdata {
     struct jpeg_source_mgr mgr;
 
     int header_read;
-    int locked;
+    int decompress_started;
 
     VALUE source_io;
     VALUE buffer;
@@ -441,8 +441,8 @@ init_jerror(struct jpeg_error_mgr * err)
 static void
 raise_if_locked(struct readerdata *reader)
 {
-    if (reader->locked)
-	rb_raise(rb_eRuntimeError, "Can't modify a locked Reader");
+    if (reader->decompress_started)
+	rb_raise(rb_eRuntimeError, "Can't modify a Reader after decompress started.");
 }
 
 static void
@@ -883,28 +883,6 @@ set_dct_method(VALUE self, VALUE dct_method)
     }
 }
 
-static VALUE
-j_gets2(struct readerdata *reader)
-{
-    struct jpeg_decompress_struct * cinfo;
-    VALUE sl;
-    int width, components, sl_width, ret;
-    JSAMPROW ijg_buffer;
-
-    cinfo = &reader->cinfo;
-
-    width      = cinfo->output_width;
-    components = cinfo->output_components;
-
-    sl_width = width * components;
-
-    sl = rb_str_new(0, sl_width);
-    ijg_buffer = (JSAMPROW)RSTRING_PTR(sl);
-    ret = jpeg_read_scanlines(cinfo, &ijg_buffer, 1);
-
-    return ret == 0 ? Qnil : sl;
-}
-
 /*
  *  call-seq:
  *     gets -> string or nil
@@ -918,20 +896,29 @@ j_gets2(struct readerdata *reader)
 static VALUE
 j_gets(VALUE self)
 {
-    struct jpeg_decompress_struct * cinfo;
     struct readerdata *reader;
+    struct jpeg_decompress_struct *cinfo;
+    VALUE sl;
+    int sl_width, ret;
+    JSAMPROW ijg_buffer;
 
     Data_Get_Struct(self, struct readerdata, reader);
+    cinfo = &reader->cinfo;
 
     if (!reader->header_read)
       read_header(reader, Qnil);
 
-    if (reader->locked == 0) {
-	reader->locked = 1;
-	jpeg_start_decompress(&reader->cinfo);
+    if (!reader->decompress_started) {
+	reader->decompress_started = 1;
+	jpeg_start_decompress(cinfo);
     }
 
-    return j_gets2(reader);
+    sl_width = cinfo->output_width * cinfo->output_components;
+    sl = rb_str_new(0, sl_width);
+    ijg_buffer = (JSAMPROW)RSTRING_PTR(sl);
+
+    ret = jpeg_read_scanlines(cinfo, &ijg_buffer, 1);
+    return ret == 0 ? Qnil : sl;
 }
 
 /*

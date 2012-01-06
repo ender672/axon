@@ -83,17 +83,18 @@ module Axon
 
     def get_scaler
       r = calc_fit_ratio
+      return @source if r == 1
+
+      final_width = calculate_width
+      final_height = calculate_height
 
       if r > 1
-        NearestNeighborScaler.new(@source, width, height)
+        NearestNeighborScaler.new(@source, final_width, final_height)
       elsif r < 1
-        if r <= 0.5 && @source.kind_of?(JPEG::Reader)
+        if r <= 0.5 && @source.respond_to?(:scale_denom=)
           @source.scale_denom = calc_jpeg_pre_shrink(r)
-          r = calc_fit_ratio
         end
-        BilinearScaler.new(@source, width, height)
-      else
-        @source
+        BilinearScaler.new(@source, final_width, final_height)
       end
     end
 

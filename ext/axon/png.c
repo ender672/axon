@@ -27,14 +27,27 @@ id_to_color_type(ID rb, int components)
     rb_raise(rb_eRuntimeError, "Color Space not recognized.");
 }
 
+static ID
+png_color_type_to_id(png_byte color_type)
+{
+    switch (color_type) {
+      case PNG_COLOR_TYPE_GRAY:       return id_GRAYSCALE;
+      case PNG_COLOR_TYPE_GRAY_ALPHA: return id_GRAYSCALE;
+      case PNG_COLOR_TYPE_RGB:        return id_RGB;
+      case PNG_COLOR_TYPE_RGB_ALPHA:  return id_RGB;
+    }
+
+    rb_raise(rb_eRuntimeError, "PNG Color Type not recognized.");
+}
+
 static int
 get_components(png_structp png_ptr, png_infop info_ptr)
 {
     switch (png_get_color_type(png_ptr, info_ptr)) {
-    case PNG_COLOR_TYPE_GRAY:       return 1;
-    case PNG_COLOR_TYPE_GRAY_ALPHA: return 2;
-    case PNG_COLOR_TYPE_RGB:        return 3;
-    case PNG_COLOR_TYPE_RGB_ALPHA:  return 4;
+      case PNG_COLOR_TYPE_GRAY:       return 1;
+      case PNG_COLOR_TYPE_GRAY_ALPHA: return 2;
+      case PNG_COLOR_TYPE_RGB:        return 3;
+      case PNG_COLOR_TYPE_RGB_ALPHA:  return 4;
     }
 
     return 0;
@@ -221,7 +234,7 @@ raise_if_locked(struct png_data *reader)
 }
 
 static void
-free_png(struct png_data *reader)
+free_reader(struct png_data *reader)
 {
     png_structp png_ptr;
     png_infop info_ptr;
@@ -233,12 +246,7 @@ free_png(struct png_data *reader)
 	png_destroy_read_struct(&png_ptr, &info_ptr, (png_info **)NULL);
     else if (png_ptr)
 	png_destroy_read_struct(&png_ptr, (png_info **)NULL, (png_info **)NULL);
-}
 
-static void
-free_reader(struct png_data *reader)
-{
-    free_png(reader);
     free(reader);
 }
 
@@ -276,12 +284,15 @@ mark(struct png_data *reader)
 	rb_gc_mark(io);
 }
 
-static void
-allocate_png(struct png_data *reader)
+static VALUE
+allocate(VALUE klass)
 {
+    VALUE self;
+    struct png_data *reader;
     png_structp png_ptr;
     png_infop info_ptr;
-
+    
+    self = Data_Make_Struct(klass, struct png_data, mark, free_reader, reader);
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL,
 				     (png_error_ptr)png_error_fn,
 				     (png_error_ptr)png_warning_fn);
@@ -297,16 +308,6 @@ allocate_png(struct png_data *reader)
 
     reader->png_ptr = png_ptr;
     reader->info_ptr = info_ptr;
-}
-
-static VALUE
-allocate(VALUE klass)
-{
-    VALUE self;
-    struct png_data *reader;
-    
-    self = Data_Make_Struct(klass, struct png_data, mark, free_reader, reader);
-    allocate_png(reader);
 
     return self;
 }
@@ -337,6 +338,11 @@ initialize(VALUE self, VALUE io)
     png_set_read_fn(png_ptr, (void *)io, read_data_fn);
     reader->io = io;
     png_read_info(png_ptr, info_ptr);
+    
+    if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
+	png_set_palette_to_rgb(png_ptr);
+	png_read_update_info(png_ptr, info_ptr);
+    }
 
     return self;
 }
@@ -366,19 +372,6 @@ components(VALUE self)
 	return Qnil;
 
     return INT2FIX(c);
-}
-
-static ID
-png_color_type_to_id(png_byte color_type)
-{
-    switch (color_type) {
-    case PNG_COLOR_TYPE_GRAY:       return id_GRAYSCALE;
-    case PNG_COLOR_TYPE_GRAY_ALPHA: return id_GRAYSCALE;
-    case PNG_COLOR_TYPE_RGB:        return id_RGB;
-    case PNG_COLOR_TYPE_RGB_ALPHA:  return id_RGB;
-    }
-
-    rb_raise(rb_eRuntimeError, "PNG Color Type not recognized.");
 }
 
 /*

@@ -152,9 +152,9 @@ module Axon
     end
 
     def read_with_padding
+      cmp = @source.components
       line = @source.gets
-      line << line[-@source.components, @source.components]
-      line
+      line + line[-cmp, cmp]
     end
   end
 end

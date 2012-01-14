@@ -67,7 +67,15 @@ pnglib version 1.2.x or later.
 
 == INSTALL:
 
-gem install axon
+OSX:
+
+  $ brew install libjpeg # requires homebrew (http://mxcl.github.com/homebrew/)
+  $ gem install axon
+
+Ubuntu:
+
+  $ sudo apt-get install libjpeg-dev libpng-dev
+  $ gem install axon
 
 == LICENSE:
 

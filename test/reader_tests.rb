@@ -29,10 +29,6 @@ module Axon
       assert_raises(CustomError) { @readerclass.new io }
     end
 
-    def test_empty_string_io
-      assert_raises(RuntimeError) { @readerclass.new(CustomIO.new("")) }
-    end
-    
     def test_not_a_string_io
       assert_raises(TypeError) { @readerclass.new(CustomIO.new(:foo)) }
     end

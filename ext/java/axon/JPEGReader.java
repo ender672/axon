@@ -27,6 +27,7 @@ import org.jruby.util.IOInputStream;
 public class JPEGReader extends RubyObject {
     private ImageReader reader;
     private IRubyObject rb_io_in;
+    private ImageTypeSpecifier its;
     private int lineno_i;
     
     private static ObjectAllocator ALLOCATOR = new ObjectAllocator() {
@@ -58,6 +59,14 @@ public class JPEGReader extends RubyObject {
         }
         
         reader.setInput(iis, true);
+
+        try {
+            its = reader.getImageTypes(0).next();
+        }
+        catch(IOException ioe) {
+            throw getRuntime().newIOErrorFromException(ioe);
+        }
+
         return this;
     }
     
@@ -144,8 +153,6 @@ public class JPEGReader extends RubyObject {
     }    
     
     private int getBands() throws IOException {
-        ImageTypeSpecifier its;
-        its = reader.getImageTypes(0).next();
         return its.getNumComponents();
     }
 }

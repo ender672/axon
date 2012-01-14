@@ -179,6 +179,7 @@ module Axon
     end
 
     def test_io_returns_invalid_type
+      skip "JRuby doesn't mind odd io returns" if(RUBY_PLATFORM =~ /java/)
       [nil, "bar"].each do |r|
         im = Solid.new(200, 100)
         assert_raises TypeError, "should get a TypeError when IO#write returns a #{r.class}." do

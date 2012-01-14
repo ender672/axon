@@ -37,7 +37,12 @@ public class JPEG {
         ImageOutputStream ios = ImageIO.createImageOutputStream(jruby_io);
         writer.setOutput(ios);
         RubyImage img = new RubyImage(img_in);
-        writer.write(img);
+        try {
+            writer.write(img);
+        }
+        catch(NegativeArraySizeException nas) {
+            throw context.getRuntime().newRuntimeError("An exception occurred while writing.");            
+        }
         ios.flush();
         
         return context.getRuntime().newFixnum(ios.getStreamPosition());

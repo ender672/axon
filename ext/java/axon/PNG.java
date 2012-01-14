@@ -24,7 +24,18 @@ public class PNG {
         ImageOutputStream ios = ImageIO.createImageOutputStream(jruby_io);
         writer.setOutput(ios);
         RubyImage img = new RubyImage(img_in);
-        writer.write(img);
+        try {
+            writer.write(img);
+        }
+        catch(IllegalArgumentException iae) {
+            throw context.getRuntime().newRuntimeError("An Illegal Argument exception occurred while writing.");
+        }
+        catch(ArrayIndexOutOfBoundsException oob) {
+            throw context.getRuntime().newRuntimeError("An Out of Bounds exception occurred while writing.");            
+        }
+        catch(NegativeArraySizeException nas) {
+            throw context.getRuntime().newRuntimeError("An exception occurred while writing.");            
+        }
         return context.getRuntime().newFixnum(ios.getStreamPosition());
     }
 

@@ -1,9 +1,10 @@
 = TODO
   * get everything running on windows
-  * get rid of color_model for now -- we get enough information from components.
+  * get all tests passing on jruby
   * for jruby, consider adding kind of a back-door method, e.g.
     gets_as_jruby_bufferedimage that allows internal calls to pass scanlines
-    along natively.
+    along natively. Something similar might slightly speed up the C extension
+    as well by eliminating some memory copies.
   * have a setting where decode / encode warnings will result in exceptions
   * add #initialize_copy
   * Check frozen status on setters, etc.

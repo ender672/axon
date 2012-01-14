@@ -66,6 +66,9 @@ public class JPEGReader extends RubyObject {
         catch(IOException ioe) {
             throw getRuntime().newIOErrorFromException(ioe);
         }
+        catch(ArrayIndexOutOfBoundsException oob) {
+            throw getRuntime().newRuntimeError("An index out of bounds error occurred while reading.");            
+        }
 
         return this;
     }

@@ -16,6 +16,7 @@ import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
+import org.jruby.Ruby;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
@@ -66,6 +67,7 @@ public class RubyImage implements RenderedImage {
         ByteArrayOutputStream stream;
         byte[] sl_bytes;
         int[] bandOffsets;
+        Raster raster;
         
         w = getWidth();
         h = getHeight();
@@ -76,19 +78,33 @@ public class RubyImage implements RenderedImage {
         bandOffsets = new int[numbands];
         for (int i=0; i<numbands; i++)
             bandOffsets[i] = i;
+        
+        if (rect.height < 1 || rect.width < 1)
+            throw runtime().newRuntimeError("Requested image region has invalid size.");
 
         stream = new ByteArrayOutputStream(rect.height * rect.width);
         
         for (int j=0; j<rect.height; j++) {
-            sl = (RubyString)callMethod("gets");
+            sl = RubyString.objAsString(context(), callMethod("gets"));
             sl_bytes = sl.getBytes();
-            stream.write(sl_bytes, 0, sl_size);
+            try {
+                stream.write(sl_bytes, 0, sl_size);
+            }
+            catch(IndexOutOfBoundsException iob) {
+                throw runtime().newRuntimeError("An index out of bounds error occurred while writing.");
+            }
         }
 
         dataBuffer = new DataBufferByte(stream.toByteArray(), stream.size());
+        try {
+            raster = Raster.createInterleavedRaster(dataBuffer, w, rect.height,
+                sl_size, numbands, bandOffsets, new Point(0, lineno));
+        }
+        catch(IllegalArgumentException iae) {
+            throw runtime().newRuntimeError("An argument exception occurred while preparing image data.");
+        }
         
-        return(Raster.createInterleavedRaster(dataBuffer, w, rect.height,
-                sl_size, numbands, bandOffsets, new Point(0, lineno)));
+        return(raster);
     }
     
     public Vector<RenderedImage> getSources() {
@@ -166,8 +182,14 @@ public class RubyImage implements RenderedImage {
     }
 
     private IRubyObject callMethod(String name) {
-        ThreadContext context;
-        context = rb_image.getRuntime().getCurrentContext();
-        return rb_image.callMethod(context, name);
-    }    
+        return rb_image.callMethod(context(), name);
+    }
+    
+    private ThreadContext context() {
+        return runtime().getCurrentContext();
+    }
+    
+    private Ruby runtime() {
+        return rb_image.getRuntime();
+    }
 }

@@ -17,6 +17,7 @@ module Axon
     end
 
     def test_invalid_bufsize
+      skip "JRuby's JPEG writer doesn't accept a buffer size" if(RUBY_PLATFORM =~ /java/)
       assert_raises RuntimeError do
         JPEG.write(@image, @io_out, :bufsize => 0)
       end

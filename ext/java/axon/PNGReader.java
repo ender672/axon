@@ -59,7 +59,7 @@ public class PNGReader extends RubyObject {
             its = reader.getImageTypes(0).next();
         }
         catch(IOException ioe) {
-            throw getRuntime().newIOErrorFromException(ioe);
+            throw getRuntime().newRuntimeError("An IO error occured while reading.");
         }
 
         return this;

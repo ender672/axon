@@ -87,6 +87,10 @@ public class RubyImage implements RenderedImage {
         for (int j=0; j<rect.height; j++) {
             sl = RubyString.objAsString(context(), callMethod("gets"));
             sl_bytes = sl.getBytes();
+            
+            if(sl_bytes.length != sl_size)
+                throw runtime().newRuntimeError("Image returned a scanline with a bad size.");
+            
             try {
                 stream.write(sl_bytes, 0, sl_size);
             }

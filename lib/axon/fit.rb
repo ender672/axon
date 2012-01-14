@@ -110,7 +110,9 @@ module Axon
     # This depends on our version of libjpeg:
     #   * libjpeg version 7 and greater can scale N/8 with all N from 1 to 16.
     #   * libjpeg version 6 and below can scale 1/N with all N from 1 to 8.
+    #   * jruby doesn't do this at all
     def jpeg_scale_dct(r)
+      return unless defined?(JPEG::LIB_VERSION)
       if JPEG::LIB_VERSION >= 70
         # when shrinking, we want scale_num to be the next highest integer
         if r < 1

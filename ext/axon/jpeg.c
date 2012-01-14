@@ -604,7 +604,6 @@ initialize(int argc, VALUE *argv, VALUE self)
     struct readerdata *reader;
     j_decompress_ptr cinfo;
     VALUE io, markers;
-    int i;
 
     Data_Get_Struct(self, struct readerdata, reader);
     raise_if_locked(reader);

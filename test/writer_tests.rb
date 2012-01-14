@@ -111,7 +111,7 @@ module Axon
       [-1, nil, :foo].each do |l|
         # we don't know if the writer will care but test anyways to detect
         # interpreter crashes and mem leaks.
-        @mod.write(CustomLinenoImage.new(l), @io_out)
+        @mod.write(CustomLinenoImage.new(l), @io_out) rescue nil
       end
     end
 
@@ -197,6 +197,7 @@ module Axon
     end
 
     def test_io_returns_invalid_length
+      skip "JRuby doesn't mind odd io returns" if(RUBY_PLATFORM =~ /java/)
       [0, -1, -100, 2000, 1].each do |r|
         assert_raises RuntimeError do
           @mod.write(@image, CustomIO.new(r))

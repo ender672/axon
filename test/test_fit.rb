@@ -33,6 +33,7 @@ module Axon
     end
 
     def test_jpeg_pre_scale_one_half
+      skip "JRuby's JPEG decoder doesn't pre-scale" if(RUBY_PLATFORM =~ /java/)
       io = StringIO.new
       JPEG.write(Solid.new(10, 20), io)
       io.rewind
@@ -51,6 +52,7 @@ module Axon
     end
 
     def test_jpeg_pre_scale_two
+      skip "JRuby's JPEG decoder doesn't pre-scale" if(RUBY_PLATFORM =~ /java/)
       io = StringIO.new
       JPEG.write(Solid.new(10, 20), io)
       io.rewind

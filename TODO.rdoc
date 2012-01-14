@@ -1,5 +1,6 @@
 = TODO
-  * get everything running on osx and windows
+  * get everything running on windows
+  * support jruby
   * have a setting where decode / encode warnings will result in exceptions
   * add #initialize_copy
   * Check frozen status on setters, etc.

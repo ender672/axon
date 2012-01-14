@@ -5,6 +5,7 @@ require 'axon/cropper'
 require 'axon/fit'
 require 'axon/scalers'
 require 'axon/generators'
+require 'axon/alpha_stripper'
 require 'stringio'
 
 module Axon
@@ -176,6 +177,8 @@ module Axon
     # Writes the image to +io_out+ as compressed JPEG data. Returns the number
     # of bytes written.
     #
+    # If the image has an alpha channel it will be stripped.
+    #
     # +options+ may contain the following symbols:
     #
     # * :bufsize     -- the maximum size in bytes of the writes that will be
@@ -191,6 +194,9 @@ module Axon
     #   i.jpeg(io_out, :quality => 88) # writes the image to output.jpg
     #
     def jpeg(*args)
+      case @source.components
+      when 2,4 then @source = AlphaStripper.new(@source)
+      end
       JPEG.write(@source, *args)
     end
 

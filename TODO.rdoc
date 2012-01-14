@@ -1,6 +1,9 @@
 = TODO
   * get everything running on windows
-  * support jruby
+  * get rid of color_model for now -- we get enough information from components.
+  * for jruby, consider adding kind of a back-door method, e.g.
+    gets_as_jruby_bufferedimage that allows internal calls to pass scanlines
+    along natively.
   * have a setting where decode / encode warnings will result in exceptions
   * add #initialize_copy
   * Check frozen status on setters, etc.

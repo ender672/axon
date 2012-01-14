@@ -1,8 +1,8 @@
 #include <ruby.h>
 #include <png.h>
 
-static ID id_write, id_GRAYSCALE, id_RGB, id_gets, id_width, id_height,
-	  id_color_model, id_components, id_read;
+static ID id_write, id_GRAYSCALE, id_GRAYSCALE_ALPHA, id_RGB, id_RGB_ALPHA,
+	  id_gets, id_width, id_height, id_color_model, id_components, id_read;
 
 struct png_data {
     png_structp png_ptr;
@@ -17,14 +17,16 @@ struct io_write {
 };
 
 static int
-id_to_color_type(ID rb, int components)
+components_to_color_type(int components)
 {
-    if      (rb == id_GRAYSCALE && components == 1) return PNG_COLOR_TYPE_GRAY;
-    else if (rb == id_GRAYSCALE && components == 2) return PNG_COLOR_TYPE_GRAY_ALPHA;
-    else if (rb == id_RGB       && components == 3) return PNG_COLOR_TYPE_RGB;
-    else if (rb == id_RGB       && components == 4) return PNG_COLOR_TYPE_RGB_ALPHA;
-
-    rb_raise(rb_eRuntimeError, "Color Space not recognized.");
+    switch (components) {
+      case 1: return PNG_COLOR_TYPE_GRAY;
+      case 2: return PNG_COLOR_TYPE_GRAY_ALPHA;
+      case 3: return PNG_COLOR_TYPE_RGB;
+      case 4: return PNG_COLOR_TYPE_RGB_ALPHA;
+    }
+    
+    rb_raise(rb_eRuntimeError, "Unrecognized number of components.");
 }
 
 static ID
@@ -32,9 +34,9 @@ png_color_type_to_id(png_byte color_type)
 {
     switch (color_type) {
       case PNG_COLOR_TYPE_GRAY:       return id_GRAYSCALE;
-      case PNG_COLOR_TYPE_GRAY_ALPHA: return id_GRAYSCALE;
+      case PNG_COLOR_TYPE_GRAY_ALPHA: return id_GRAYSCALE_ALPHA;
       case PNG_COLOR_TYPE_RGB:        return id_RGB;
-      case PNG_COLOR_TYPE_RGB_ALPHA:  return id_RGB;
+      case PNG_COLOR_TYPE_RGB_ALPHA:  return id_RGB_ALPHA;
     }
 
     rb_raise(rb_eRuntimeError, "PNG Color Type not recognized.");
@@ -114,18 +116,14 @@ write_scanline(VALUE scan_line, png_structp png_ptr, png_infop info_ptr)
 static void
 write_configure(VALUE image_in, png_structp png_ptr, png_infop info_ptr)
 {
-    VALUE width, height, color_model, components;
+    VALUE width, height, components;
     int color_type;
 
     width       = rb_funcall(image_in, id_width, 0);
     height      = rb_funcall(image_in, id_height, 0);
-    components  = rb_funcall(image_in, id_components, 0);
 
-    color_model = rb_funcall(image_in, id_color_model, 0);
-    if (SYMBOL_P(color_model))
-	color_type = id_to_color_type(SYM2ID(color_model), NUM2INT(components));
-    else
-	rb_raise(rb_eTypeError, "source image has a non symbol color space");
+    components  = rb_funcall(image_in, id_components, 0);
+    color_type = components_to_color_type(NUM2INT(components));
 
     png_set_IHDR(png_ptr, info_ptr, NUM2INT(width), NUM2INT(height), 8,
 		 color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
@@ -507,6 +505,8 @@ Init_PNG()
 
     id_GRAYSCALE = rb_intern("GRAYSCALE");
     id_RGB = rb_intern("RGB");
+    id_GRAYSCALE = rb_intern("GRAYSCALE_ALPHA");
+    id_RGB = rb_intern("RGB_ALPHA");
     id_write = rb_intern("write");
     id_read = rb_intern("read");
     id_gets = rb_intern("gets");

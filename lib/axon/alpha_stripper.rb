@@ -40,13 +40,6 @@ module Axon
       end
     end
 
-    # Gets the color model of the image. Same as the color model of the source
-    # image.
-    #
-    def color_model
-      @source.color_model
-    end
-
     # Gets the line number of the next scanline.
     #
     def lineno

@@ -9,10 +9,6 @@ module Axon
       assert_equal @image.components, @reader.components
     end
     
-    def test_header_color_model
-      assert_equal @image.color_model, @reader.color_model
-    end
-    
     def test_io_returns_too_much_data
       io = CustomIO.new(Proc.new{ |io, *args| io.read(*args)[0..20] * 100 }, @data)
       assert_raises(RuntimeError) { @readerclass.new io }

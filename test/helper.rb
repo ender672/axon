@@ -52,7 +52,6 @@ module Axon
 
     def height; @parent.height; end
     def width; @parent.width; end
-    def color_model; @parent.color_model; end
     def components; @parent.components; end
     def gets; @parent.gets; end
     def lineno; @parent.lineno; end
@@ -98,12 +97,11 @@ module Axon
   end
 
   class ArrayWrapper
-    attr_reader :lineno, :components, :color_model
+    attr_reader :lineno, :components
 
-    def initialize(ary, components=nil, color_model=nil)
+    def initialize(ary, components=nil)
       @ary = ary
       @components = components || 3
-      @color_model = color_model || :RGB
       @lineno = 0
     end
 
@@ -134,10 +132,6 @@ module Axon
 
     def components
       @source.components
-    end
-
-    def color_model
-      @source.color_model
     end
 
     def height

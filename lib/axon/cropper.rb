@@ -74,13 +74,6 @@ module Axon
       @source.components
     end
 
-    # Gets the color model of the cropped image. Same as the color model of the
-    # source image.
-    #
-    def color_model
-      @source.color_model
-    end
-
     # Gets the next scanline from the cropped image.
     #
     def gets

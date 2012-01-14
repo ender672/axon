@@ -33,17 +33,15 @@ public class RubyImage implements RenderedImage {
     }
     
     public ColorModel getColorModel() {
-        String rbimg_color_space;
         int components, cs_type;
         boolean has_alpha;
         
         components = components();
-        rbimg_color_space = callMethod("color_model").toString();
 
-        if (rbimg_color_space == "RGB")
-            cs_type = ColorSpace.CS_sRGB;
-        else if (rbimg_color_space == "GRAYSCALE")
+        if (components == 1 || components == 2)
             cs_type = ColorSpace.CS_GRAY;
+        else if (components == 3 || components == 4)
+            cs_type = ColorSpace.CS_sRGB;
         else
             cs_type = ColorSpace.TYPE_RGB; // FIXME: Raise an exception instead
         

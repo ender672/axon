@@ -14,9 +14,6 @@ module Axon
     # The height of the generated image.
     attr_reader :height
 
-    # The color model of the generated image.
-    attr_reader :color_model
-
     # The components in the generated image.
     attr_reader :components
 
@@ -30,7 +27,6 @@ module Axon
     #
     # +options+ may contain the following optional hash key values:
     #
-    # * :color_model -- The color model of the generated image.
     # * :components -- The number of components in the generated image.
     #
     def initialize(width, height, options=nil)
@@ -38,7 +34,6 @@ module Axon
 
       @width = width
       @height = height
-      @color_model = options[:color_model] || :RGB
       @components = options[:components] || 3
       @lineno = 0
       @empty_string = String.new
@@ -73,9 +68,6 @@ module Axon
     # The height of the generated image.
     attr_reader :height
 
-    # The color model of the generated image.
-    attr_reader :color_model
-
     # The components in the generated image.
     attr_reader :components
 
@@ -90,10 +82,9 @@ module Axon
     # The optional argument +color+ is the binary value that will be assigned
     # to each pixel.
     #
-    def initialize(width, height, color=nil, color_model=nil)
+    def initialize(width, height, color=nil)
       @width, @height = width, height
       @color = color || "\x00\x00\x00"
-      @color_model = color_model || :RGB
       @components = @color.size
       @lineno = 0
     end

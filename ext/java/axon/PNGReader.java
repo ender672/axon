@@ -78,27 +78,6 @@ public class PNGReader extends RubyObject {
     }
     
     @JRubyMethod
-    public IRubyObject color_model(ThreadContext context) {
-        ImageTypeSpecifier its;
-
-        try {
-            its = reader.getRawImageType(0);
-            switch(its.getNumComponents()) {
-                case 1:
-                case 2:
-                    return getRuntime().newSymbol("GRAYSCALE");
-                case 3:
-                case 4:
-                    return getRuntime().newSymbol("RGB");
-            }
-            return getRuntime().newSymbol("UNKNOWN");
-        }
-        catch(IOException ioe) {
-            throw getRuntime().newIOErrorFromException(ioe);
-        }
-    }
-    
-    @JRubyMethod
     public IRubyObject components(ThreadContext context) {
         try {
             return getRuntime().newFixnum(getBands());

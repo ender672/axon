@@ -66,25 +66,6 @@ module Axon
       end
     end
 
-    def test_nil_image_color_model
-      assert_raises TypeError do
-        @mod.write(CustomColorModelImage.new(nil), @io_out)
-      end
-    end
-
-    def test_invalid_color_model
-      assert_raises RuntimeError do
-        @mod.write(CustomColorModelImage.new(:foo), @io_out)
-      end
-    end
-
-    def test_color_model_raises_exception
-      im = CustomColorModelImage.new(Proc.new{ raise CustomError })
-      assert_raises CustomError do
-        @mod.write(im, @io_out)
-      end
-    end
-
     def test_invalid_image_components
       [0, -100, 0.0001, 15].each do |w|
         assert_raises RuntimeError do

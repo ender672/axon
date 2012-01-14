@@ -231,7 +231,7 @@ write_exif(j_compress_ptr cinfo, char *str, int len)
 static void
 write_configure(j_compress_ptr cinfo, VALUE image_in, VALUE quality)
 {
-    VALUE color_model, width, components, rb_height;
+    VALUE width, components, rb_height;
     int height;
 
     width = rb_funcall(image_in, id_width, 0);
@@ -245,12 +245,18 @@ write_configure(j_compress_ptr cinfo, VALUE image_in, VALUE quality)
 
     components = rb_funcall(image_in, id_components, 0);
     cinfo->input_components = NUM2INT(components);
-
-    color_model = rb_funcall(image_in, id_color_model, 0);
-    if (SYMBOL_P(color_model))
-	cinfo->in_color_space = id_to_j_color_space(SYM2ID(color_model));
-    else
-	rb_raise(rb_eTypeError, "source image has a non symbol color space");
+    
+    switch (cinfo->input_components) {
+      case 1:
+	cinfo->in_color_space = JCS_GRAYSCALE;
+	break;
+      case 3:
+	cinfo->in_color_space = JCS_RGB;
+	break;
+      default:
+	rb_raise(rb_eRuntimeError, "source image has the wrong number of components");
+	break;
+    }
 
     jpeg_set_defaults(cinfo);
 

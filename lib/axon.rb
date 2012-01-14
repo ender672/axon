@@ -304,12 +304,6 @@ module Axon
       @source.components
     end
 
-    # Gets the color model of the image.
-    #
-    def color_model
-      @source.color_model
-    end
-
     # Gets the width of the image.
     #
     def width

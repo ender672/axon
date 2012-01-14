@@ -38,13 +38,6 @@ module Axon
       @source.components
     end
 
-    # Gets the color model of the fitted image. Same as the color model of the
-    # source image.
-    #
-    def color_model
-      @source.color_model
-    end
-
     # Gets the width of the fitted image. This will be the given width or less.
     #
     def width

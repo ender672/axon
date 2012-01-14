@@ -9,7 +9,7 @@ if(RUBY_PLATFORM =~ /java/)
     (list.to_a.map { |f| "'#{f}'" }).join(' ')
   end
 
-  file 'ext/java/axon/axon.jar' => FileList.new('ext/axon/java/axon/*.java') do
+  file 'ext/java/axon/axon.jar' => FileList.new('ext/java/axon/*.java') do
     cd 'ext/java' do
       sh "javac -g -cp #{Config::CONFIG['prefix']}/lib/jruby.jar #{FileList['axon/*.java']}"
       sh "jar cf axon/axon.jar #{quote_file_list('axon/*.class')}"

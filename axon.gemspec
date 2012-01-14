@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
                      'lib/axon/*.rb',
                      'ext/axon/*{.c,.h}',
                      'ext/axon/extconf.rb',
+                     'ext/java/axon/*.java',
                      'test/*.rb',
                      '.gemtest'
   ].to_a
@@ -15,14 +16,10 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.require_paths << 'ext'
   s.description = <<EOF
-axon reads, manipulates, and writes images.
-
-axon depends only on libjpeg and libpng.
-
-axon never stores an entire image in memory. All images and operations are
-streamed. This keeps memory requirements and latency low.
+Reads, writes and resizes images quickly and with minimal memory use. Runs on
+MRI, Rubinius, and JRuby.
 EOF
-  s.summary = 'Axon reads, manipulates, and writes images.'
+  s.summary = 'Reads, writes and resizes images quickly.'
   s.version = '0.1.1'
   s.authors = ['Timothy Elliott']
   s.extensions << 'ext/axon/extconf.rb'

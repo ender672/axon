@@ -325,7 +325,7 @@ write_jpeg2(VALUE image_in, VALUE io_out, size_t bufsize, VALUE icc_profile,
     mgr.pub.init_destination = init_destination;
     mgr.pub.empty_output_buffer = empty_output_buffer;
     mgr.pub.term_destination = term_destination;
-    mgr.alloc = 1024;
+    mgr.alloc = bufsize;
     mgr.io = io_out;
     cinfo.dest = (struct jpeg_destination_mgr *)&mgr;
 

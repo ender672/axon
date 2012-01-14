@@ -20,22 +20,10 @@ streamed. This keeps memory requirements and latency low.
 
 == SYNOPSIS:
 
-  # Short, chained example. Reads a JPEG from io_in and writes scaled png to
-  # io_out.
-  Axon.jpeg(io_in).fit(100, 100).png(io_out)
-
-  # Longer example, reads the JPEG header, looks at properties and header
-  # values, sets decompression options, scales the image, sets compression
-  # options, and writes a JPEG.
-  reader = Axon::JPEG::Reader(io, [:APP2])
-
-  puts reader.width  #=> Integer
-  puts reader.height #=> Integer
-  puts reader[:APP2] #=> Array of Strings
-  reader.scale_denom = 4 # Image will be scaled by 1/4 on read
-
-  fitted = Axon::Fit.new(reader, 100, 100) # Fits image in a 100x100 box
-  JPEG.write(fitted, io, :quality => 88)
+  # Read a JPEG and write it as a scaled PNG to io_out.
+  Axon.jpeg_file("image.jpg") do |image|
+    image.fit(100, 100).png(io_out)
+  end
 
 == BASIC API:
 

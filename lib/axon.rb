@@ -41,6 +41,31 @@ module Axon
   end
 
   # :call-seq:
+  #   Axon.jpeg_file(path [, markers], &block) -> block_result
+  #
+  # Opens the file located at +path+ and reads it as a compressed JPEG image.
+  #
+  # +markers+ should be an array of valid JPEG header marker symbols. Valid
+  # symbols are :APP0 through :APP15 and :COM.
+  #
+  # If performance is important and you don't care about any markers, you can
+  # avaoid reading any header markers by supplying an empty array for +markers+.
+  #
+  # When +markers+ is not given, all known JPEG markers will be read.
+  # 
+  # This method returns the result of the block.
+  #
+  #   Axon.jpeg_file("image.jpg", [:APP2]) do |image|
+  #     image.png_file("image.png") # saves "image.jpg" to "image.png"
+  #   end
+  #
+  def self.jpeg_file(path, *args)
+    File.open(path, 'rb') do |f|
+      yield jpeg(f, *args)
+    end
+  end
+
+  # :call-seq:
   #   Axon.png(thing) -> image
   #
   # Reads a compressed PNG image from +thing+. +thing+ can be an IO object,
@@ -56,6 +81,23 @@ module Axon
     thing = StringIO.new(thing) unless thing.respond_to?(:read)
     reader = PNG::Reader.new(thing)
     Image.new(reader)
+  end
+
+  # :call-seq:
+  #   Axon.png_file(path, &block) -> block_result
+  #
+  # Opens the file located at +path+ and reads it as a compressed PNG image.
+  #
+  # This method returns the result of the block.
+  #
+  #   Axon.png_file("image.png") do |image|
+  #     image.jpeg_file("image.jpg") # saves "image.png" to "image.jpeg"
+  #   end
+  #
+  def self.png_file(path, *args)
+    File.open(path, 'rb') do |f|
+      yield png(f, *args)
+    end
   end
 
   class Image
@@ -201,6 +243,28 @@ module Axon
     end
 
     # :call-seq:
+    #   jpeg_file(path [, options])
+    #
+    # Writes the image to a new file at +path+ as compressed JPEG data.
+    # Returns the number of bytes written.
+    #
+    # If the image has an alpha channel it will be stripped.
+    # 
+    # See Axon#jpeg for a description of +options+.
+    #
+    # == Example
+    #
+    #   Axon.png_file("image.png") do |image|
+    #     image.jpeg_file("image.jpg") # saves the image to "image.jpeg"
+    #   end
+    #
+    def jpeg_file(path, *args)
+      File.open(path, 'wb') do |f|
+        jpeg(f, *args)
+      end
+    end
+
+    # :call-seq:
     #   png(io_out)
     #
     # Writes the image to +io_out+ as compressed PNG data. Returns the number
@@ -214,6 +278,24 @@ module Axon
     #
     def png(*args)
       PNG.write(@source, *args)
+    end
+
+    # :call-seq:
+    #   png_file(path)
+    #
+    # Writes the image to a new file at +path+ as compressed PNG data. Returns
+    # the number of bytes written.
+    #
+    # == Example
+    #
+    #   Axon.jpeg_file("image.jpg") do |image|
+    #     image.png_file("image.png") # saves the image to "image.jpeg"
+    #   end
+    #
+    def png_file(path, *args)
+      File.open(path, 'wb') do |f|
+        png(f, *args)
+      end
     end
 
     # Gets the components in the image.

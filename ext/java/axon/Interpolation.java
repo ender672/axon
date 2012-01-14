@@ -2,6 +2,7 @@ package axon;
 
 import org.jruby.Ruby;
 import org.jruby.RubyFixnum;
+import org.jruby.RubyNumeric;
 import org.jruby.RubyModule;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
@@ -20,7 +21,7 @@ public class Interpolation {
         
         width = RubyFixnum.num2int(args[2]);
         components = RubyFixnum.num2int(args[4]);
-        ty = RubyFixnum.num2int(args[3]);
+        ty = RubyNumeric.num2dbl(args[3]);
         
         scanline1 = args[0].convertToString().getByteList();
         scanline2 = args[1].convertToString().getByteList();
@@ -61,37 +62,12 @@ public class Interpolation {
             c0 = sample_x_i * components;
             c1 = c0 + components;
             
-/*            if (i == 0) {
-                System.out.println(
-                    "width_ratio_inv: " + width_ratio_inv +
-                    "width: " + width +
-                    ", src_width: " + src_width +
-                    ", components: " + components +
-                    ", ty: " + ty +
-                    ", sample_x: " + sample_x +
-                    ", sample_x_i: " + sample_x_i +
-                    ", tx: " + tx +
-                    ", p11: " + p11 + ", p01: " + p01 +
-                    ", p10: " + p10 + ", p00: " + p00
-                );
-                
-            }
-*/            
             for (int j = 0; j < components; j++) {
                 c00 = (short)(0x000000FF & (int)scanline1[c0 + j]);
                 c10 = (short)(0x000000FF & (int)scanline1[c1 + j]);
                 c01 = (short)(0x000000FF & (int)scanline2[c0 + j]);
                 c11 = (short)(0x000000FF & (int)scanline2[c1 + j]);
 
-                if (i == 0) {
-//                    System.out.println("c00: " + c00 + ", p11: " + p11 + ", p01: " + p01 + ", p10: " + p10 + ", p00: " + p00);
-                }
-
-                if (i == 0) {
-                    System.out.println("calculated: " + (p00 * c00 + p10 * c10 + p01 * c01 + p11 * c11));
-                }
-
-//                dest_sl[dest_pos] = p00 * c00 + p10 * c10 + p01 * c01 + p11 * c11;
                 dest_sl[dest_pos] = (byte)(((short)(p00 * c00 + p10 * c10 + p01 * c01 + p11 * c11)) & 0xFF);
                 dest_pos += 1;
             }

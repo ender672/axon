@@ -100,11 +100,8 @@ public class PNGReader extends RubyObject {
     
     @JRubyMethod
     public IRubyObject components(ThreadContext context) {
-        ImageTypeSpecifier its;
-
         try {
-            its = reader.getRawImageType(0);
-            return getRuntime().newFixnum(its.getNumComponents());
+            return getRuntime().newFixnum(getBands());
         }
         catch(IOException ioe) {
             throw getRuntime().newIOErrorFromException(ioe);
@@ -114,15 +111,48 @@ public class PNGReader extends RubyObject {
     @JRubyMethod
     public IRubyObject gets(ThreadContext context) throws IOException {
         BufferedImage image;
+        ImageReadParam irp;
+        Raster raster;
+        DataBufferByte buffer;
+        byte[] data;
+        int numbands;
+        int[] bands;
+        
+        /* Return nil if we are already at the bottom of the image */
         if (lineno_i >= reader.getHeight(0))
             return(context.nil);
-        ImageReadParam irp = reader.getDefaultReadParam();
+
+        /* request one scanline */
+        irp = reader.getDefaultReadParam();
         irp.setSourceRegion(new Rectangle(0, lineno_i, reader.getWidth(0), 1));
-        lineno_i += 1;
+        
+        numbands = getBands();
+        switch (numbands) {
+            case 3:
+                bands = new int[3];
+                bands[0] = 2;
+                bands[1] = 1;
+                bands[2] = 0;
+                irp.setDestinationBands(bands);
+                break;
+            case 4:
+                bands = new int[4];
+                bands[0] = 2;
+                bands[1] = 1;
+                bands[2] = 0;
+                bands[3] = 3;
+                irp.setDestinationBands(bands);
+                break;
+        }
         image = reader.read(0, irp);
-        Raster raster = image.getRaster();
-        DataBufferByte buffer = (DataBufferByte)raster.getDataBuffer();
-        return(new RubyString(getRuntime(), getRuntime().getString(), buffer.getData()));
+
+        /* get the raw bytes from the scanline */
+        raster = image.getRaster();
+        buffer = (DataBufferByte)raster.getDataBuffer();
+        data = buffer.getData();
+
+        lineno_i += 1;
+        return(new RubyString(getRuntime(), getRuntime().getString(), data));
     }
     
     @JRubyMethod
@@ -139,5 +169,11 @@ public class PNGReader extends RubyObject {
     
     public PNGReader(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
+    }
+    
+    private int getBands() throws IOException {
+        ImageTypeSpecifier its;
+        its = reader.getRawImageType(0);
+        return its.getNumComponents();
     }
 }

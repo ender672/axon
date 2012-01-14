@@ -3,7 +3,7 @@ package axon;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -104,11 +104,8 @@ public class JPEGReader extends RubyObject {
     
     @JRubyMethod
     public IRubyObject components(ThreadContext context) {
-        ImageTypeSpecifier its;
-
         try {
-            its = reader.getImageTypes(0).next();
-            return getRuntime().newFixnum(its.getNumComponents());
+            return getRuntime().newFixnum(getBands());
         }
         catch(IOException ioe) {
             throw getRuntime().newIOErrorFromException(ioe);
@@ -118,15 +115,41 @@ public class JPEGReader extends RubyObject {
     @JRubyMethod
     public IRubyObject gets(ThreadContext context) throws IOException {
         BufferedImage image;
+        ImageReadParam irp;
+        WritableRaster raster;
+        DataBufferByte buffer;
+        byte[] data;
+        int numbands;
+        byte tmp;
+        
+        /* Return nil if we are already at the bottom of the image */
         if (lineno_i >= reader.getHeight(0))
             return(context.nil);
-        ImageReadParam irp = reader.getDefaultReadParam();
+
+        /* request one scanline */
+        irp = reader.getDefaultReadParam();
         irp.setSourceRegion(new Rectangle(0, lineno_i, reader.getWidth(0), 1));
-        lineno_i += 1;
+        
         image = reader.read(0, irp);
-        Raster raster = image.getRaster();
-        DataBufferByte buffer = (DataBufferByte)raster.getDataBuffer();
-        return(new RubyString(getRuntime(), getRuntime().getString(), buffer.getData()));
+
+        /* get the raw bytes from the scanline */
+        raster = image.getRaster();
+        
+        buffer = (DataBufferByte)raster.getDataBuffer();
+        data = buffer.getData();
+        
+        /* JPEGReader forces us to reorder BGR to RGB. */
+        numbands = getBands();
+        if (numbands == 3) {
+            for (int i = 0; i < data.length / 3; i++) {
+                tmp = data[i * 3];
+                data[i * 3] = data[i * 3 + 2];
+                data[i * 3 + 2] = tmp;
+            }
+        }
+
+        lineno_i += 1;
+        return(new RubyString(getRuntime(), getRuntime().getString(), data));
     }
     
     @JRubyMethod
@@ -140,4 +163,10 @@ public class JPEGReader extends RubyObject {
         RubyClass jpegReader = png.defineClassUnder("Reader", runtime.getObject(), ALLOCATOR);
         jpegReader.defineAnnotatedMethods(JPEGReader.class);
     }    
+    
+    private int getBands() throws IOException {
+        ImageTypeSpecifier its;
+        its = reader.getImageTypes(0).next();
+        return its.getNumComponents();
+    }
 }

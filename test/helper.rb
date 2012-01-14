@@ -8,7 +8,7 @@ module Axon
     # Generate a solid velvet image
     def setup
       super
-      @image = Solid.new 10, 15, "\x0A\x14\x69"
+      @image = Solid.new 10, 16, "\x0A\x14\x69"
       @io_out = StringIO.new
       @io_out.set_encoding 'ASCII-8BIT' if @io_out.respond_to?(:set_encoding)
     end

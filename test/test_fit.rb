@@ -31,5 +31,41 @@ module Axon
       r = Fit.new(im, 10, 20)
       assert_image_dimensions(r, 10, 20)
     end
+
+    def test_jpeg_pre_scale_one_half
+      io = StringIO.new
+      JPEG.write(Solid.new(10, 20), io)
+      io.rewind
+      im = JPEG::Reader.new(io)
+      width = im.width / 2
+      height = im.height / 2
+
+      r = Fit.new(im, width, height)
+      assert_image_dimensions(r, width, height)
+
+      if JPEG::LIB_VERSION >= 70
+        assert_equal(4, im.scale_num)
+      else
+        assert_equal(2, im.scale_denom)
+      end
+    end
+
+    def test_jpeg_pre_scale_two
+      io = StringIO.new
+      JPEG.write(Solid.new(10, 20), io)
+      io.rewind
+      im = JPEG::Reader.new(io)
+      width = im.width * 2
+      height = im.height * 2
+
+      r = Fit.new(im, width, height)
+      assert_image_dimensions(r, width, height)
+
+      if JPEG::LIB_VERSION >= 70
+        assert_equal(16, im.scale_num)
+      else
+        assert_equal(1, im.scale_denom)
+      end
+    end
   end
 end

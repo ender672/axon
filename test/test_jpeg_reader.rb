@@ -42,40 +42,48 @@ module Axon
         assert_equal 5, @reader.scale_num
       end
 
-      unless LIB_TURBO
-        def test_scale_denom
-          assert @reader.scale_denom > 0
+      def test_scale_denom
+        assert @reader.scale_denom > 0
+      end
+
+      def test_set_scale_denom
+        @reader.scale_denom = 8
+        assert_equal 8, @reader.scale_denom
+      end
+
+      def test_scale_denom_affects_image_size
+        pre_width = @reader.width
+        pre_height = @reader.height
+
+        @reader.scale_denom = 2
+
+        if JPEG::LIB_VERSION >= 70
+          # I can't really explain why this doubles our dimensions. The
+          # jpeg decompressor reports 8 / 2 for scale_num / scale_denom.
+          assert_equal pre_width * 2, @reader.width
+          assert_equal pre_height * 2, @reader.height
+        else
+          assert_equal pre_width / 2, @reader.width
+          assert_equal pre_height / 2, @reader.height
         end
+      end
 
-        def test_set_scale_denom
-          @reader.scale_denom = 8
-          assert_equal 8, @reader.scale_denom
-        end
+      def test_scale_denom_affects_written_image
+        pre_width = @reader.width
+        pre_height = @reader.height
 
-        def test_scale_denom_affects_image_size
-          pre_width = @reader.width
-          pre_height = @reader.height
+        @reader.scale_denom = 2
 
-          @reader.scale_denom = 2
+        io_out = StringIO.new
+        JPEG.write(@reader, io_out)
+        io_out.rewind
 
-          assert @reader.width < pre_width
-          assert @reader.height < pre_height
-        end
+        new_velvet_reader = Reader.new(io_out)
 
-        def test_scale_denom_affects_written_image
-          pre_width = @reader.width
-          pre_height = @reader.height
-
-          @reader.scale_denom = 2
-
-          io_out = StringIO.new
-          JPEG.write(@reader, io_out)
-          io_out.rewind
-
-          new_velvet_reader = Reader.new(io_out)
-
-          assert new_velvet_reader.width < pre_width
-          assert new_velvet_reader.height < pre_height
+        if JPEG::LIB_VERSION >= 70
+          assert_image_dimensions(new_velvet_reader, pre_width * 2, pre_height * 2)
+        else
+          assert_image_dimensions(new_velvet_reader, pre_width / 2, pre_height / 2)
         end
       end
 

@@ -27,6 +27,7 @@ module Axon
     end
 
     def test_symbol_bufsize
+      skip_symbol_fixnums
       assert_raises TypeError do
         JPEG.write(@image, @io_out, :bufsize => :foo)
       end
@@ -55,6 +56,7 @@ module Axon
     end
 
     def test_symbol_quality
+      skip_symbol_fixnums
       assert_raises TypeError do
         JPEG.write(@image, @io_out, :quality => :foo)
       end

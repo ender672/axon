@@ -28,6 +28,10 @@ module Axon
       assert_nil image.gets, 'image.gets should be nil after reading height lines'
       assert_equal height, image.lineno
     end
+
+    def skip_symbol_fixnums
+      skip("ruby 1.8.7 treats symbols as fixnums") unless RUBY_VERSION >= "1.9"
+    end
   end
 
   class CustomError < RuntimeError; end

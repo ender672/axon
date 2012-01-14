@@ -78,11 +78,6 @@ write_data(png_structp png_ptr, png_bytep data, png_size_t length)
     str = rb_str_new(data, length);
     iw = (struct io_write *)png_get_io_ptr(png_ptr);
     rb_write_len = rb_funcall(iw->io, id_write, 1, str);
-
-    /* Ruby 1.8.7 makes up odd numbers when running NUM2INT on a symbol */
-    if (TYPE(rb_write_len) == T_SYMBOL)
-	rb_raise(rb_eTypeError, "Number Expected, but got Symbol.");
-
     write_len = NUM2INT(rb_write_len);
 
     if ((size_t)write_len != length)
@@ -123,19 +118,8 @@ write_configure(VALUE image_in, png_structp png_ptr, png_infop info_ptr)
     int color_type;
 
     width       = rb_funcall(image_in, id_width, 0);
-    /* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-    if (SYMBOL_P(width))
-	rb_raise(rb_eTypeError, "source image has a symbol for width.");
-
     height      = rb_funcall(image_in, id_height, 0);
-    /* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-    if (SYMBOL_P(height))
-	rb_raise(rb_eTypeError, "source image has a symbol for height.");
-
     components  = rb_funcall(image_in, id_components, 0);
-    /* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-    if (SYMBOL_P(components))
-	rb_raise(rb_eTypeError, "source image has a symbol for components.");
 
     color_model = rb_funcall(image_in, id_color_model, 0);
     if (SYMBOL_P(color_model))

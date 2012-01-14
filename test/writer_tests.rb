@@ -18,11 +18,16 @@ module Axon
       end
     end
 
-    def test_invalid_height_type
-      [nil, :foo].each do |h|
-        assert_raises TypeError, "should throw a TypeError when given a #{h.class} for height." do
-          @mod.write(CustomHeightImage.new(h), @io_out)
-        end
+    def test_nil_height
+      assert_raises TypeError, "should throw a TypeError when given nil for height." do
+        @mod.write(CustomHeightImage.new(nil), @io_out)
+      end
+    end
+
+    def test_symbol_height
+      skip_symbol_fixnums
+      assert_raises TypeError, "should throw a TypeError when given a symbol for height." do
+        @mod.write(CustomHeightImage.new(:foo), @io_out)
       end
     end
 
@@ -41,11 +46,16 @@ module Axon
       end
     end
 
-    def test_invalid_width_type
-      [nil, :foo].each do |w|
-        assert_raises TypeError, "should throw a TypeError when given a #{w.class} for width." do
-          @mod.write(CustomWidthImage.new(w), @io_out)
-        end
+    def test_nil_width
+      assert_raises TypeError, "should throw a TypeError when given nil for width." do
+        @mod.write(CustomWidthImage.new(nil), @io_out)
+      end
+    end
+
+    def test_symbol_width
+      skip_symbol_fixnums
+      assert_raises TypeError, "should throw a TypeError when given a symbol for width." do
+        @mod.write(CustomWidthImage.new(:foo), @io_out)
       end
     end
 
@@ -83,19 +93,29 @@ module Axon
       end
     end
 
-    def test_invalid_components_type
-      [nil, :foo].each do |w|
-        assert_raises TypeError do
-          @mod.write(CustomComponentsImage.new(w), @io_out)
-        end
+    def test_nil_components
+      assert_raises TypeError do
+        @mod.write(CustomComponentsImage.new(nil), @io_out)
       end
     end
 
-    def test_invalid_components_type
-      [nil, :foo].each do |w|
-        assert_raises TypeError, "should throw a TypeError when given a #{w.class} for components." do
-          @mod.write(CustomComponentsImage.new(w), @io_out)
-        end
+    def test_symbol_components
+      skip_symbol_fixnums
+      assert_raises TypeError do
+        @mod.write(CustomComponentsImage.new(:foo), @io_out)
+      end
+    end
+
+    def test_nil_components
+      assert_raises TypeError, "should throw a TypeError when given nil for components." do
+        @mod.write(CustomComponentsImage.new(nil), @io_out)
+      end
+    end
+
+    def test_symbol_components
+      skip_symbol_fixnums
+      assert_raises TypeError, "should throw a TypeError when given a symbol for components." do
+        @mod.write(CustomComponentsImage.new(:foo), @io_out)
       end
     end
 
@@ -178,11 +198,19 @@ module Axon
     end
 
     def test_io_returns_invalid_type
-      [nil, :foo, "bar"].each do |r|
+      [nil, "bar"].each do |r|
         im = Solid.new(200, 100)
         assert_raises TypeError, "should get a TypeError when IO#write returns a #{r.class}." do
           @mod.write(im, CustomIO.new(r))
         end
+      end
+    end
+
+    def test_io_returns_symbol
+      skip_symbol_fixnums
+      im = Solid.new(200, 100)
+      assert_raises TypeError, "should get a TypeError when IO#write returns a symbol." do
+        @mod.write(im, CustomIO.new(:foo))
       end
     end
 

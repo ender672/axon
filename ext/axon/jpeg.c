@@ -156,10 +156,6 @@ empty_output_buffer(j_compress_ptr cinfo)
     str = rb_str_new(dest->buffer, dest->alloc);
 
     write_len = rb_funcall(dest->io, id_write, 1, str);
-    /* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-    if (SYMBOL_P(write_len))
-	rb_raise(rb_eTypeError, "write returned a symbol.");
-
     write_len_i = (size_t)NUM2INT(write_len);
     dest->total += write_len_i;
     if (write_len_i != dest->alloc)
@@ -181,9 +177,6 @@ term_destination(j_compress_ptr cinfo)
     if (len > 0) {
 	str = rb_str_new(dest->buffer, len);
 	write_len = rb_funcall(dest->io, id_write, 1, str);
-	/* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-	if (SYMBOL_P(write_len))
-	    rb_raise(rb_eTypeError, "write returned a symbol.");
 	write_len_i = (size_t)NUM2INT(write_len);
 	dest->total += write_len_i;
 	if (write_len_i != len)
@@ -242,25 +235,15 @@ write_configure(j_compress_ptr cinfo, VALUE image_in, VALUE quality)
     int height;
 
     width = rb_funcall(image_in, id_width, 0);
-    /* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-    if (SYMBOL_P(width))
-	rb_raise(rb_eTypeError, "source image has a symbol for width.");
     cinfo->image_width = NUM2INT(width);
 
     rb_height = rb_funcall(image_in, id_height, 0);
-    /* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-    if (SYMBOL_P(rb_height))
-	rb_raise(rb_eTypeError, "source image has a symbol for height.");
-
     height = NUM2INT(rb_height);
     if (height < 1)
 	rb_raise(rb_eRuntimeError, "Source image gave an invalid height.");
     cinfo->image_height = height;
 
     components = rb_funcall(image_in, id_components, 0);
-    /* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-    if (SYMBOL_P(components))
-	rb_raise(rb_eTypeError, "source image has a symbol for components.");
     cinfo->input_components = NUM2INT(components);
 
     color_model = rb_funcall(image_in, id_color_model, 0);
@@ -268,11 +251,6 @@ write_configure(j_compress_ptr cinfo, VALUE image_in, VALUE quality)
 	cinfo->in_color_space = id_to_j_color_space(SYM2ID(color_model));
     else
 	rb_raise(rb_eTypeError, "source image has a non symbol color space");
-
-    /* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-    if (SYMBOL_P(quality))
-	rb_raise(rb_eTypeError, "symbol for quality.");
-
 
     jpeg_set_defaults(cinfo);
 
@@ -394,10 +372,6 @@ write_jpeg(int argc, VALUE *argv, VALUE self)
 
     if (!NIL_P(options) && TYPE(options) == T_HASH) {
 	rb_bufsize = rb_hash_aref(options, sym_bufsize);
-	/* in 1.8.7, NUM2INT gives funny numbers for Symbols */
-	if (SYMBOL_P(rb_bufsize))
-	    rb_raise(rb_eTypeError, "symbol for bufsize.");
-
 	if (!NIL_P(rb_bufsize)) {
 	    bufsize = NUM2INT(rb_bufsize);
 	    if (bufsize < 1)

@@ -64,6 +64,7 @@ module Axon
     end
 
     def test_exif_roundtrip
+      skip unless JPEG::Reader.allocate.respond_to?(:exif)
       random_data = ""
       (100).times do
         random_data << [rand].pack('d') # 800 bytes random data
@@ -78,6 +79,9 @@ module Axon
     end
 
     def test_exif_with_icc_roundtrip
+      skip unless JPEG::Reader.allocate.respond_to?(:exif)
+      skip unless JPEG::Reader.allocate.respond_to?(:icc_profile)
+
       random_icc_data = ""
       (2**16).times do                  # a little larger than one jpeg segment
         random_icc_data << [rand].pack('d') # 8 bytes random data
@@ -100,6 +104,7 @@ module Axon
     end
 
     def test_large_icc_roundtrip
+      skip "JRuby ImageIO gives us a different icc profile than provided" if(RUBY_PLATFORM =~ /java/)
       random_data = ""
       (2**16).times do                  # a little larger than one jpeg segment
         random_data << [rand].pack('d') # 8 bytes random data

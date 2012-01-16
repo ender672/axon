@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
+import java.awt.color.ICC_ColorSpace;
+import java.awt.color.ICC_Profile;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.ColorModel;
@@ -50,6 +52,21 @@ public class RubyImage implements RenderedImage {
         
         return(new ComponentColorModel(ColorSpace.getInstance(cs_type),
                 has_alpha, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE));
+    }
+    
+    public ColorModel getICCColorModel(byte[] data) {
+        int components;
+        ICC_ColorSpace cs;
+        boolean has_alpha;
+        
+        components = components();
+
+        cs = new ICC_ColorSpace(ICC_Profile.getInstance(data));
+        
+        has_alpha = components == 2 || components == 4;
+        
+        return(new ComponentColorModel(cs, has_alpha, false,
+                Transparency.OPAQUE, DataBuffer.TYPE_BYTE));
     }
     
     public Raster getTile(int tileX, int tileY) {

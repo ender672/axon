@@ -1,17 +1,34 @@
 package axon;
 
 import java.awt.Rectangle;
+import java.awt.color.ICC_ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
+
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.Document;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -64,7 +81,7 @@ public class JPEGReader extends RubyObject {
             its = reader.getImageTypes(0).next();
         }
         catch(IOException ioe) {
-            throw getRuntime().newIOErrorFromException(ioe);
+            throw getRuntime().newRuntimeError("An IO Error occured while reading.");
         }
         catch(ArrayIndexOutOfBoundsException oob) {
             throw getRuntime().newRuntimeError("An index out of bounds error occurred while reading.");            
@@ -146,6 +163,13 @@ public class JPEGReader extends RubyObject {
     @JRubyMethod
     public IRubyObject lineno(ThreadContext context) {
         return getRuntime().newFixnum(lineno_i);
+    }
+    
+    @JRubyMethod
+    public IRubyObject icc_profile(ThreadContext context) {
+        byte[] data;
+        data = ((ICC_ColorSpace)its.getColorModel().getColorSpace()).getProfile().getData();
+        return(new RubyString(getRuntime(), getRuntime().getString(), data));
     }
     
     public static void initJPEGReader(Ruby runtime) {

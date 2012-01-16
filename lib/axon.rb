@@ -327,5 +327,9 @@ module Axon
     def gets
       @source.gets
     end
+    
+    def method_missing(name, *args)
+      @source.send(name, *args)
+    end
   end
 end

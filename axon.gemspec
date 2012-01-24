@@ -5,6 +5,7 @@ Gem::Specification.new do |s|
                      '*.rdoc',
                      'lib/axon.rb',
                      'lib/axon/*.rb',
+                     'lib/axon/axon.jar',
                      'ext/axon/*{.c,.h}',
                      'ext/axon/extconf.rb',
                      'ext/java/axon/*.java',
@@ -14,7 +15,6 @@ Gem::Specification.new do |s|
   s.name = 'axon'
   s.platform = Gem::Platform::RUBY
   s.require_path = 'lib'
-  s.require_paths << 'ext'
   s.description = <<EOF
 Reads, writes and resizes images quickly and with minimal memory use. Runs on
 MRI, Rubinius, and JRuby.

@@ -2,8 +2,9 @@ ext/axon/axon.so
 ext/axon/*.log
 ext/axon/*.o
 ext/axon/Makefile
-ext/java/axon/axon.jar
 ext/java/axon/*.class
+lib/axon/axon.jar
+lib/axon/axon.so
 *.gem
 *.rbc
 

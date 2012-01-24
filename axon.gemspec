@@ -16,10 +16,10 @@ Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.require_path = 'lib'
   s.description = <<EOF
-Reads, writes and resizes images quickly and with minimal memory use. Runs on
-MRI, Rubinius, and JRuby.
+Read, manipulate, and write images with an emphasis on speed and a low memory
+profile.
 EOF
-  s.summary = 'Reads, writes and resizes images quickly.'
+  s.summary = 'Read, write and resize images.'
   s.version = '0.1.1'
   s.authors = ['Timothy Elliott']
   s.extensions << 'ext/axon/extconf.rb'

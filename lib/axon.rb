@@ -9,7 +9,7 @@ require 'axon/alpha_stripper'
 require 'stringio'
 
 module Axon
-  VERSION = '0.1.1'
+  VERSION = '0.2.0'
 
   # :call-seq:
   #   Axon.jpeg(thing [, markers]) -> image

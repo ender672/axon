@@ -20,7 +20,7 @@ Read, manipulate, and write images with an emphasis on speed and a low memory
 profile.
 EOF
   s.summary = 'Read, write and resize images.'
-  s.version = '0.1.1'
+  s.version = '0.2.0'
   s.authors = ['Timothy Elliott']
   s.extensions << 'ext/axon/extconf.rb'
   s.email = 'tle@holymonkey.com'

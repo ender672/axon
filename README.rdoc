@@ -4,9 +4,7 @@ http://github.com/ender672/axon
 
 == DESCRIPTION:
 
-axon reads, manipulates, and writes images.
-
-axon depends only on libjpeg and libpng.
+axon reads, manipulates, and writes images. It depends on libjpeg and libpng.
 
 axon never stores an entire image in memory. All images and operations are
 streamed. This keeps memory requirements and latency low.
@@ -20,9 +18,9 @@ streamed. This keeps memory requirements and latency low.
 
 == SYNOPSIS:
 
-  # Read a JPEG and write it as a scaled PNG to io_out.
+  # Read a JPEG and write it as a scaled PNG.
   Axon.jpeg_file("image.jpg") do |image|
-    image.fit(100, 100).png(io_out)
+    image.fit(100, 100).png_file("image.png")
   end
 
 == BASIC API:
@@ -33,8 +31,6 @@ All image objects are expected to respond to the following methods:
     Output height of the image.
   * Image#width
     Output width of the image.
-  * Image#color_model
-    Can be :GRAYSCALE or :RGB
   * Image#components
     RGB image with alpha has 4 components.
     RGB image has 3 components.
